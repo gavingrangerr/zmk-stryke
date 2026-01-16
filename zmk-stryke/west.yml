@@ -9,8 +9,8 @@ manifest:
       remote: zmkfirmware
       import: app/west.yml
     - name: zmk-stryke
-      remote: zmkfirmware   # or your fork if shield code is here
-      revision: main        # or whichever branch/tag
-      path: config          # local path for this repo
+      remote: zmkfirmware
+      revision: main
+      path: zmk-stryke  # <--- Changed this from 'config' to 'zmk-stryke'
   self:
     path: config
