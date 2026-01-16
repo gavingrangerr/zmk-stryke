@@ -1,0 +1,6 @@
+if SHIELD_STRYKE
+
+config ZMK_KEYBOARD_NAME
+    default "stryke"
+
+endif

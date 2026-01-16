@@ -1,3 +1,0 @@
-config ZMK_KEYBOARD_STRYKE
-    bool "Stryke"
-    default y

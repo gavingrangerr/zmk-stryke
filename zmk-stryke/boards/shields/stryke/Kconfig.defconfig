@@ -1,6 +1,0 @@
-if ZMK_KEYBOARD_STRYKE
-
-config ZMK_KEYBOARD_NAME
-    default "Stryke"
-
-endif
