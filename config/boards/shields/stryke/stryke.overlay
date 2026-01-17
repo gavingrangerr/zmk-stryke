@@ -41,9 +41,9 @@
         kscan = <&kscan0>;
 
         keys = <
-            <zmk_key_physical_attrs 0 0>   <zmk_key_physical_attrs 100 0>   <zmk_key_physical_attrs 200 0>   <zmk_key_physical_attrs 300 0>
-            <zmk_key_physical_attrs 0 100> <zmk_key_physical_attrs 100 100> <zmk_key_physical_attrs 200 100> <zmk_key_physical_attrs 300 100>
-            <zmk_key_physical_attrs 0 200> <zmk_key_physical_attrs 100 200> <zmk_key_physical_attrs 200 200> <zmk_key_physical_attrs 300 200>
+            <zmk_key_physical_attrs 0 0 0>   <zmk_key_physical_attrs 100 0 0>   <zmk_key_physical_attrs 200 0 0>   <zmk_key_physical_attrs 300 0 0>
+            <zmk_key_physical_attrs 0 100 0> <zmk_key_physical_attrs 100 100 0> <zmk_key_physical_attrs 200 100 0> <zmk_key_physical_attrs 300 100 0>
+            <zmk_key_physical_attrs 0 200 0> <zmk_key_physical_attrs 100 200 0> <zmk_key_physical_attrs 200 200 0> <zmk_key_physical_attrs 300 200 0>
         >;
     };
 };
