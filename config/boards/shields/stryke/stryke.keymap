@@ -1,22 +1,13 @@
-#define ZMK_BEHAVIORS_OMIT_KT
 #include <behaviors.dtsi>
-#undef ZMK_BEHAVIORS_KEEP_ALL
-
-#define ZMK_BEHAVIORS_KEEP_SK
-#define ZMK_BEHAVIORS_KEEP_MT
-#define ZMK_BEHAVIORS_KEEP_KT
-#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
 
 / {
     keymap {
         compatible = "zmk,keymap";
 
         default_layer {
-            bindings = <
-                &kp C_PP &kp N2 &kp N3 &kp N4
-                &kp N5   &kp N6 &kp N7 &kp N8
-                &kp N9   &kp N0 &kp F1 &studio_unlock
-            >;
+            // This key will now toggle Play/Pause for any active media on your Mac
+            bindings = <&kp C_PP>;
         };
     };
 };
