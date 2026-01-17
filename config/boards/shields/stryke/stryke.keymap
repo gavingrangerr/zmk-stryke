@@ -7,7 +7,7 @@
 
         default_layer {
             // This key will now toggle Play/Pause for any active media on your Mac
-            bindings = <&kp C_PP>;
+            bindings = <&kp PSCRN>;
         };
     };
 };
