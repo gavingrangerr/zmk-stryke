@@ -2,7 +2,7 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 
-/ {     
+/ {
     combos {
         compatible = "zmk,combos";
         
@@ -19,18 +19,18 @@
         base_layer {
             display-name = "media_layer";
             bindings = < 
-                &kp C_BRI_DN  &kp C_BRI_UP  &kp C_MISSION_CONTROL  &kp C_LAUNCHPAD  
-                &kp C_PREV    &kp C_PP      &kp C_NEXT             &kp C_MUTE       
-                &none         &kp C_VOL_DN  &kp C_VOL_UP           &none             
+                &kp C_BRI_DN  &kp C_BRI_UP  &kp F3        &kp F4  
+                &kp C_PREV    &kp C_PP      &kp C_NEXT    &kp C_MUTE       
+                &none         &kp C_VOL_DN  &kp C_VOL_UP  &none             
             >;
         }; 
         
         macro_layer_1 {
             display-name = "config_layer";
             bindings = <
-                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1           &bt BT_SEL 2   
-                &none         &none         &none                  &none    
-                &none         &none         &none                  &none
+                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
+                &none         &none         &none         &none    
+                &none         &none         &none         &none
             >;
         };  
         
