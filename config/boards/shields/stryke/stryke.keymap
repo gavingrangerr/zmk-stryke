@@ -17,7 +17,7 @@
         compatible = "zmk,keymap";
             
         base_layer {
-            display-name = "media_layer";
+            display-name = "main_layer";
             bindings = < 
                 &kp C_BRI_DN  &kp C_BRI_UP  &kp F3        &kp F4  
                 &kp C_PREV    &kp C_PP      &kp C_NEXT    &kp C_MUTE       

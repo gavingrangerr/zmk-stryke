@@ -34,7 +34,7 @@
     
     physical_layout0: physical_layout_0 {
         compatible = "zmk,physical-layout";
-        display-name = "3x4 Layout";
+        display-name = "stryke 2.0";
         transform = <&default_transform>;
         kscan = <&default_kscan>;
         
