@@ -4,8 +4,7 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
-        /* Comment out for now - add back once basic build works */
-        /* zmk,physical-layout = &phys_layout0; */
+        zmk,physical-layout = &phys_layout0;
     };
 
     default_transform: keymap_transform_0 {
@@ -35,12 +34,26 @@
             <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
     };
 
-    /* 
     phys_layout0: phys_layout_0 {
         compatible = "zmk,physical-layout";
         display-name = "Default Layout";
         transform = <&default_transform>;
         kscan = <&kscan0>;
+
+        /* Define key positions directly without macros */
+        key0: key0 { x = <0>; y = <0>; };
+        key1: key1 { x = <100>; y = <0>; };
+        key2: key2 { x = <200>; y = <0>; };
+        key3: key3 { x = <300>; y = <0>; };
+        
+        key4: key4 { x = <0>; y = <100>; };
+        key5: key5 { x = <100>; y = <100>; };
+        key6: key6 { x = <200>; y = <100>; };
+        key7: key7 { x = <300>; y = <100>; };
+        
+        key8: key8 { x = <0>; y = <200>; };
+        key9: key9 { x = <100>; y = <200>; };
+        key10: key10 { x = <200>; y = <200>; };
+        key11: key11 { x = <300>; y = <200>; };
     };
-    */
 };
