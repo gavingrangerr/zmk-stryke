@@ -40,7 +40,7 @@
         transform = <&default_transform>;
         kscan = <&kscan0>;
         
-        // This visualizes the 4x3 grid in ZMK Studio
+        // Visual positioning for ZMK Studio
         keys = <
             <zmk_key_physical_attrs 0 0>   <zmk_key_physical_attrs 100 0>   <zmk_key_physical_attrs 200 0>   <zmk_key_physical_attrs 300 0>
             <zmk_key_physical_attrs 0 100> <zmk_key_physical_attrs 100 100> <zmk_key_physical_attrs 200 100> <zmk_key_physical_attrs 300 100>
