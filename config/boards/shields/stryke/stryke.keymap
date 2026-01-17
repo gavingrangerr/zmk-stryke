@@ -2,12 +2,29 @@
 #include <dt-bindings/zmk/keys.h>
 
 / {
+    behaviors {
+        // This allows you to Tap for Play/Pause, or Hold to switch to Layer 1
+        lt_studio: layer_tap_studio {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            bindings = <&mo>, <&kp>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
         default_layer {
-            // This key will now toggle Play/Pause for any active media on your Mac
-            bindings = <&kp C_PP>;
+            // TAP this key for Play/Pause. 
+            // HOLD this key to access the Studio Unlock on Layer 1.
+            bindings = <&lt_studio 1 C_PP>;
+        };
+
+        studio_layer {
+            // When holding the key, it becomes the Unlock key for the Mac App
+            bindings = <&studio_unlock>;
         };
     };
 };
