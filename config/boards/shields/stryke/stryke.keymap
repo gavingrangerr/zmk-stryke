@@ -1,13 +1,45 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
 
-/ {
+/ {     
+    combos {
+        compatible = "zmk,combos";
+        
+        combo_activate_layer_1 {
+            timeout-ms = <50>;
+            // In a 12-key (0-11) layout, 12 and 14 no longer exist.
+            // Changed to 8 and 10 (Bottom left and Bottom right) as an example.
+            key-positions = <8 10>; 
+            bindings = <&mo 1>;
+        };
+    };
+    
     keymap {
         compatible = "zmk,keymap";
-
-        default_layer {
-            // This key will now toggle Play/Pause for any active media on your Mac
-            bindings = <&kp PSCRN>;
-        };
+            
+        base_layer {
+            display-name = "base_layer";
+            bindings = < 
+                &kp KP_N7     &kp KP_N8    &kp KP_N9    &kp KP_DIVIDE  
+                &kp KP_N4     &kp KP_N5    &kp KP_N6    &kp KP_MULTIPLY  
+                &kp KP_N1     &kp KP_N2    &kp KP_N3    &kp KP_MINUS      
+            >;
+        }; 
+        
+        macro_layer_1 {
+            display-name = "config_layer";
+            bindings = <
+                &kp KP_NUMLOCK    &none    &none    &studio_unlock   
+                &none             &none    &none    &none    
+                &none             &none    &none    &bt BT_CLR_ALL  
+            >;
+        };  
+        
+        // Reserved layers must still follow the matrix size or be empty
+        extra_layer_2 { status = "reserved"; };
+        extra_layer_3 { status = "reserved"; };
+        extra_layer_4 { status = "reserved"; };
+        extra_layer_5 { status = "reserved"; };
     };
 };
