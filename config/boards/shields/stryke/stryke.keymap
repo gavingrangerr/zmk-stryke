@@ -6,8 +6,8 @@
         compatible = "zmk,keymap";
 
         default_layer {
-            // C_AC_HOME triggers the "Consumer Application Control Home" (Default Browser)
-            bindings = <&kp C_AC_HOME>;
+            // This key will now toggle Play/Pause for any active media on your Mac
+            bindings = <&kp C_PP>;
         };
     };
 };
