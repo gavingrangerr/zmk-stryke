@@ -8,16 +8,16 @@
         diode-direction = "col2row";
         poll-period-ms = <20>;
 
-        // 3 Rows
-        row-gpios = <&pro_micro 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
-                    <&pro_micro 14 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
-                    <&pro_micro 16 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+        // Rows connected to P0.06, P0.07, P0.08
+        row-gpios = <&nice_nano 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
+                    <&nice_nano 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
+                    <&nice_nano 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
 
-        // 4 Columns
-        col-gpios = <&pro_micro 9 GPIO_ACTIVE_HIGH>,
-                    <&pro_micro 8 GPIO_ACTIVE_HIGH>,
-                    <&pro_micro 7 GPIO_ACTIVE_HIGH>,
-                    <&pro_micro 6 GPIO_ACTIVE_HIGH>;
+        // Columns connected to P0.00, P0.02, P0.04, P0.05
+        col-gpios = <&nice_nano 5 GPIO_ACTIVE_HIGH>,
+                    <&nice_nano 6 GPIO_ACTIVE_HIGH>,
+                    <&nice_nano 7 GPIO_ACTIVE_HIGH>,
+                    <&nice_nano 8 GPIO_ACTIVE_HIGH>;
     };
     
     default_transform: matrix_transform {
