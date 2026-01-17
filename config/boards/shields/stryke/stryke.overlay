@@ -39,8 +39,8 @@
         display-name = "Default Layout";
         transform = <&default_transform>;
         kscan = <&kscan0>;
-
-        /* Define key positions directly without macros */
+        
+        /* Minimal working key definitions */
         key0: key0 { x = <0>; y = <0>; };
         key1: key1 { x = <100>; y = <0>; };
         key2: key2 { x = <200>; y = <0>; };
