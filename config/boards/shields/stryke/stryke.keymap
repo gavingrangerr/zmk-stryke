@@ -4,8 +4,10 @@
 / {
     keymap {
         compatible = "zmk,keymap";
+
         default_layer {
-            bindings = <&kp A>;
+            // C_AC_HOME triggers the "Consumer Application Control Home" (Default Browser)
+            bindings = <&kp C_AC_HOME>;
         };
     };
 };
