@@ -6,37 +6,75 @@
     combos {
         compatible = "zmk,combos";
         
-        combo_activate_layer_1 {
+        // This combo stays from your original file: keys 8 and 10 triggers Layer 5 (Config)
+        combo_activate_config {
             timeout-ms = <50>;
             key-positions = <8 10>; 
-            bindings = <&mo 1>;
+            bindings = <&mo 5>;
         };
     };
-    
+
     keymap {
         compatible = "zmk,keymap";
-            
-        base_layer {
-            display-name = "main_layer";
+
+        // LAYER 0 – MEDIA CONTROLS
+        media_layer {
+            display-name = "Media";
             bindings = < 
-                &none         &none         &none        &none 
-                &none         &none        &none       &none       
-                &none         &none         &none        &none             
+                &kp C_PP     &kp C_PREV   &kp C_NEXT   &kp C_MUTE
+                &kp C_VOL_DN &kp C_VOL_UP &kp C_RW     &kp C_FF
+                &kp C_STOP   &kp C_PP     &kp XXXX     &tog 1
             >;
         }; 
-        
-        macro_layer_1 {
-            display-name = "config_layer";
+
+        // LAYER 1 – KiCad
+        kicad_layer {
+            display-name = "KiCad";
             bindings = <
-                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
-                &none         &none         &none         &none    
-                &none         &none         &none         &none
+                &kp R        &kp M        &kp G        &kp DEL
+                &kp V        &kp E        &kp X        &kp W
+                &kp B        &kp F        &kp H        &tog 2
             >;
         };  
-        
-        extra_layer_2 { status = "reserved"; };
-        extra_layer_3 { status = "reserved"; };
-        extra_layer_4 { status = "reserved"; };
-        extra_layer_5 { status = "reserved"; };
+
+        // LAYER 2 – Fusion 360
+        fusion_layer {
+            display-name = "Fusion";
+            bindings = <
+                &kp S        &kp R        &kp L        &kp D
+                &kp E        &kp Q        &kp F        &kp LG(Z)
+                &kp LG(N1)   &kp LG(N2)   &kp LG(N0)   &tog 3
+            >;
+        };
+
+        // LAYER 3 – VS Code
+        vscode_layer {
+            display-name = "VSCode";
+            bindings = <
+                &kp LG(P)    &kp LG(LS(P)) &kp LG(B)    &kp LG(FSLH)
+                &kp LG(D)    &kp LG(LS(L)) &kp LG(F)    &kp LG(Z)
+                &kp LC(GRAVE) &kp LG(LS(F)) &kp LG(LS(E)) &tog 4
+            >;
+        };
+
+        // LAYER 4 – Arduino IDE
+        arduino_layer {
+            display-name = "Arduino";
+            bindings = <
+                &kp LG(R)    &kp LG(U)     &kp LG(LS(M)) &kp LG(K)
+                &kp LG(T)    &kp LG(Z)     &kp LG(LS(Z)) &kp LG(F)
+                &kp LG(N)    &kp LG(O)     &kp LG(S)     &tog 0
+            >;
+        };
+
+        // LAYER 5 – BT Config (Accessed via Combo)
+        config_layer {
+            display-name = "Config";
+            bindings = <
+                &bt BT_CLR   &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
+                &none        &none         &none         &none    
+                &none        &none         &none         &none
+            >;
+        };  
     };
 };
