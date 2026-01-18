@@ -5,38 +5,33 @@
 / {
     combos {
         compatible = "zmk,combos";
-        
+
         combo_activate_layer_1 {
             timeout-ms = <50>;
-            key-positions = <8 10>; 
+            key-positions = <8 10>;
             bindings = <&mo 1>;
         };
     };
-    
+
     keymap {
         compatible = "zmk,keymap";
-            
+
         base_layer {
             display-name = "Media";
-            bindings = < 
-                &C_MPLY       &C_MPRV       &C_MNXT      &C_MUTE 
-                &C_CVOLD      &C_VOLU       &C_RWND      &C_FFWD      
-                &C_MSTP       &C_MPAUSE     &none        &none             
+            bindings = <
+                &kp C_MPLY   &kp C_MPRV   &kp C_MNXT   &kp C_MUTE
+                &kp C_VOLD   &kp C_VOLU   &kp C_RWND   &kp C_FFWD
+                &kp C_MSTP   &kp C_MPAUSE &none       &none
             >;
-        }; 
-        
+        };
+
         macro_layer_1 {
             display-name = "config_layer";
             bindings = <
-                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
-                &none         &none         &none         &none    
-                &none         &none         &none         &none
+                &bt BT_CLR   &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2
+                &none        &none        &none        &none
+                &none        &none        &none        &none
             >;
-        };  
-        
-        extra_layer_2 { status = "reserved"; };
-        extra_layer_3 { status = "reserved"; };
-        extra_layer_4 { status = "reserved"; };
-        extra_layer_5 { status = "reserved"; };
+        };
     };
 };
