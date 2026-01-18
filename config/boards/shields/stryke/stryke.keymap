@@ -5,59 +5,38 @@
 / {
     combos {
         compatible = "zmk,combos";
-        combo_layer_activate {
+        
+        combo_activate_layer_1 {
             timeout-ms = <50>;
-            key-positions = <8 10>;
+            key-positions = <8 10>; 
             bindings = <&mo 1>;
         };
     };
     
     keymap {
         compatible = "zmk,keymap";
-        
-        default_layer {
-            display-name = "Media";
+            
+        base_layer {
+            display-name = "main_layer";
             bindings = < 
-                &kp PLAY_PAUSE    &kp PREV_TRACK    &kp NEXT_TRACK    &kp MUTE
-                &kp VOL_DOWN      &kp VOL_UP        &kp REWIND        &kp FAST_FORWARD
-                &kp STOP          &kp PAUSE         &kp RECORD        &mo 1
+                &none         &none         &none        &none 
+                &none         &none        &none       &none       
+                &none         &none         &none        &none             
             >;
-        };
+        }; 
         
-        layer_1 {
-            display-name = "KiCad";
+        macro_layer_1 {
+            display-name = "config_layer";
             bindings = <
-                &kp R    &kp M    &kp G    &kp DEL
-                &kp V    &kp E    &kp X    &kp W
-                &kp B    &kp F    &kp H    &mo 2
+                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
+                &none         &none         &none         &none    
+                &none         &none         &none         &none
             >;
-        };
+        };  
         
-        layer_2 {
-            display-name = "Fusion";
-            bindings = <
-                &kp S    &kp R    &kp L    &kp D
-                &kp E    &kp Q    &kp F    &kp LG(Z)
-                &kp LG(N1) &kp LG(N2) &kp LG(N0) &mo 3
-            >;
-        };
-        
-        layer_3 {
-            display-name = "VS Code";
-            bindings = <
-                &kp LG(P)    &kp LG(LS(P))    &kp LG(B)    &kp LG(FSLH)    // Fixed: SLASH -> FSLH
-                &kp LG(D)    &kp LG(LS(L))    &kp LG(F)    &kp LG(Z)
-                &kp LC(GRAV) &kp LG(LS(F))    &kp LG(LS(E)) &mo 4           // Fixed: GRAVE -> GRAV
-            >;
-        };
-        
-        layer_4 {
-            display-name = "Arduino";
-            bindings = <
-                &kp LG(R)    &kp LG(U)    &kp LG(LS(M))    &kp LG(K)
-                &kp LG(T)    &kp LG(Z)    &kp LG(LS(Z))    &kp LG(F)
-                &kp LG(N)    &kp LG(O)    &kp LG(S)        &trans
-            >;
-        };
+        extra_layer_2 { status = "reserved"; };
+        extra_layer_3 { status = "reserved"; };
+        extra_layer_4 { status = "reserved"; };
+        extra_layer_5 { status = "reserved"; };
     };
 };
