@@ -6,37 +6,100 @@
     combos {
         compatible = "zmk,combos";
         
-        combo_activate_layer_1 {
+        // Layer activation combo (keys 9 and 11 as shown in your diagram)
+        combo_layer_activate {
             timeout-ms = <50>;
-            key-positions = <8 10>; 
+            key-positions = <8 10>; // Physical positions 9 and 11 (0-indexed)
             bindings = <&mo 1>;
         };
     };
     
     keymap {
         compatible = "zmk,keymap";
-            
-        base_layer {
-            display-name = "main_layer";
+        
+        // =================================
+        // LAYER 0 – MEDIA CONTROLS
+        // =================================
+        default_layer {
+            display-name = "Media";
             bindings = < 
-                &none         &none         &none        &none 
-                &none         &none        &none       &none       
-                &none         &none         &none        &none             
+                // Row 0: [ Play ] [ Prev ] [ Next ] [ Mute ]
+                &kp C_PLAY_PAUSE    &kp C_PREV         &kp C_NEXT         &kp C_MUTE
+                
+                // Row 1: [ Vol- ] [ Vol+ ] [ ⏮  ] [ ⏭  ]
+                &kp C_VOL_DN        &kp C_VOL_UP       &kp C_REWIND       &kp C_FAST_FWD
+                
+                // Row 2: [ ⏹ ] [ ⏸ ] [ ⏺ ] [ LAYER ]
+                &kp C_STOP          &kp C_PAUSE        &kp C_RECORD       &mo 1
             >;
-        }; 
+        };
         
-        macro_layer_1 {
-            display-name = "config_layer";
+        // =================================
+        // LAYER 1 – KiCad
+        // =================================
+        kicad_layer {
+            display-name = "KiCad";
             bindings = <
-                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
-                &none         &none         &none         &none    
-                &none         &none         &none         &none
+                // Row 0: [ R ] [ M ] [ G ] [ Delete ]
+                &kp R    &kp M    &kp G    &kp DEL
+                
+                // Row 1: [ V ] [ E ] [ X ] [ W ]
+                &kp V    &kp E    &kp X    &kp W
+                
+                // Row 2: [ B ] [ F ] [ H ] [ LAYER ]
+                &kp B    &kp F    &kp H    &mo 2
             >;
-        };  
+        };
         
-        extra_layer_2 { status = "reserved"; };
-        extra_layer_3 { status = "reserved"; };
-        extra_layer_4 { status = "reserved"; };
-        extra_layer_5 { status = "reserved"; };
+        // =================================
+        // LAYER 2 – Fusion 360
+        // =================================
+        fusion_layer {
+            display-name = "Fusion 360";
+            bindings = <
+                // Row 0: [ S ] [ R ] [ L ] [ D ]
+                &kp S              &kp R              &kp L              &kp D
+                
+                // Row 1: [ E ] [ Q ] [ F ] [ Cmd+Z ]
+                &kp E              &kp Q              &kp F              &kp LG(Z)
+                
+                // Row 2: [ Cmd+1 ] [ Cmd+2 ] [ Cmd+0 ] [ LAYER ]
+                &kp LG(1)          &kp LG(2)          &kp LG(0)          &mo 3
+            >;
+        };
+        
+        // =================================
+        // LAYER 3 – VS Code
+        // =================================
+        vscode_layer {
+            display-name = "VS Code";
+            bindings = <
+                // Row 0: [ Cmd+P ] [ Cmd+Shift+P ] [ Cmd+B ] [ Cmd+/ ]
+                &kp LG(P)          &kp LG(LS(P))      &kp LG(B)          &kp LG(SLASH)
+                
+                // Row 1: [ Cmd+D ] [ Cmd+Shift+L ] [ Cmd+F ] [ Cmd+Z ]
+                &kp LG(D)          &kp LG(LS(L))      &kp LG(F)          &kp LG(Z)
+                
+                // Row 2: [ Ctrl+` ] [ Cmd+Shift+F ] [ Cmd+Shift+E ] [ LAYER ]
+                &kp LC(GRAVE)      &kp LG(LS(F))      &kp LG(LS(E))      &mo 4
+            >;
+        };
+        
+        // =================================
+        // LAYER 4 – Arduino IDE (macOS)
+        // =================================
+        arduino_layer {
+            display-name = "Arduino";
+            bindings = <
+                // Row 0: [ Cmd+R ] [ Cmd+U ] [ Cmd+Shift+M ] [ Cmd+K ]
+                &kp LG(R)          &kp LG(U)          &kp LG(LS(M))      &kp LG(K)
+                
+                // Row 1: [ Cmd+T ] [ Cmd+Z ] [ Cmd+Shift+Z ] [ Cmd+F ]
+                &kp LG(T)          &kp LG(Z)          &kp LG(LS(Z))      &kp LG(F)
+                
+                // Row 2: [ Cmd+N ] [ Cmd+O ] [ Cmd+S ] [ TRANS ]
+                &kp LG(N)          &kp LG(O)          &kp LG(S)          &trans
+            >;
+        };
     };
 };
