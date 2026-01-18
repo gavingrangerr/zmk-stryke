@@ -9,7 +9,7 @@
         combo_activate_layer_1 {
             timeout-ms = <50>;
             key-positions = <8 10>;
-            bindings = <&mo 1>;
+            bindings = <&to 1>;
         };
     };
 
