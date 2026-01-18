@@ -38,16 +38,16 @@
             bindings = <
                 &kp S    &kp R    &kp L    &kp D
                 &kp E    &kp Q    &kp F    &kp LG(Z)
-                &kp LG(1) &kp LG(2) &kp LG(0) &mo 3
+                &kp LG(N1) &kp LG(N2) &kp LG(N0) &mo 3
             >;
         };
         
         layer_3 {
             display-name = "VS Code";
             bindings = <
-                &kp LG(P)    &kp LG(LS(P))    &kp LG(B)    &kp LG(SLASH)
+                &kp LG(P)    &kp LG(LS(P))    &kp LG(B)    &kp LG(FSLH)    // Fixed: SLASH -> FSLH
                 &kp LG(D)    &kp LG(LS(L))    &kp LG(F)    &kp LG(Z)
-                &kp LC(GRAVE) &kp LG(LS(F))   &kp LG(LS(E)) &mo 4
+                &kp LC(GRAV) &kp LG(LS(F))    &kp LG(LS(E)) &mo 4           // Fixed: GRAVE -> GRAV
             >;
         };
         
