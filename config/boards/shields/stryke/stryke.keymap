@@ -17,11 +17,11 @@
         compatible = "zmk,keymap";
             
         base_layer {
-            display-name = "main_layer";
+            display-name = "Media";
             bindings = < 
-                &none         &none         &none        &none 
-                &none         &none        &none       &none       
-                &none         &none         &none        &none             
+                &C_MPLY       &C_MPRV       &C_MNXT      &C_MUTE 
+                &C_CVOLD      &C_VOLU       &C_RWND      &C_FFWD      
+                &C_MSTP       &C_MPAUSE     &none        &none             
             >;
         }; 
         
