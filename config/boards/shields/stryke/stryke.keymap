@@ -1,42 +1,60 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
-#include <dt-bindings/zmk/bt.h>
 
 / {
     combos {
         compatible = "zmk,combos";
-        
+
         combo_activate_layer_1 {
             timeout-ms = <50>;
-            key-positions = <8 10>; 
+            key-positions = <8 10>;
             bindings = <&mo 1>;
         };
     };
-    
+
     keymap {
         compatible = "zmk,keymap";
-            
-        base_layer {
+
+        Media {
             display-name = "main_layer";
-            bindings = < 
-                &none         &none         &none        &none 
-                &none         &none        &none       &none       
-                &none         &none         &none        &none             
-            >;
-        }; 
-        
-        macro_layer_1 {
-            display-name = "config_layer";
             bindings = <
-                &bt BT_CLR    &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   
-                &none         &none         &none         &none    
-                &none         &none         &none         &none
+&kt K_PLAY_PAUSE  &kp C_PREVIOUS     &kp C_NEXT    &kp C_MUTE
+&kp C_VOLUME_UP   &kp C_VOLUME_DOWN  &kp C_REWIND  &kp C_FAST_FORWARD
+&kp C_STOP        &kp C_PAUSE        &none         &none
             >;
-        };  
-        
-        extra_layer_2 { status = "reserved"; };
-        extra_layer_3 { status = "reserved"; };
-        extra_layer_4 { status = "reserved"; };
-        extra_layer_5 { status = "reserved"; };
+        };
+
+        KiCad {
+            display-name = "kicad_layer";
+            bindings = <
+&kp R  &kp M  &kp G  &kp DEL
+&kp V  &kp E  &kp X  &kp W
+&kp B  &kp F  &kp H  &none
+            >;
+        };
+
+        Fusion {
+            bindings = <
+&kp S       &kp R       &kp L       &kp D
+&kp E       &kp Q       &kp F       &kp LG(Z)
+&kp LG(N1)  &kp LG(N2)  &kp LG(N0)  &trans
+            >;
+        };
+
+        VS-CODE {
+            bindings = <
+&kp LG(P)    &kp LS(LG(P))  &kp LG(B)      &kp LG(FSLH)
+&kp LG(D)    &kp LS(LG(L))  &kp LG(F)      &kp LG(Z)
+&kp LG(SQT)  &kp LS(LG(F))  &kp LS(LG(E))  &trans
+            >;
+        };
+
+        Arduino {
+            bindings = <
+&kp LG(R)  &kp LG(U)  &kp LS(LG(M))  &kp LG(K)
+&kp T      &kp LG(Z)  &kp LS(LG(Z))  &kp LG(F)
+&kp N      &kp LG(O)  &kp LG(S)      &trans
+            >;
+        };
     };
 };
