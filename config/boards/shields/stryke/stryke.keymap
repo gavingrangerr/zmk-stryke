@@ -15,48 +15,48 @@
     keymap {
         compatible = "zmk,keymap";
 
-        Media {
-            display-name = "Media";
+        Base {
+            display-name = "Base";
             bindings = <
-                &kt C_PLAY_PAUSE      &kp C_PREVIOUS           &kp C_NEXT            &kp C_MUTE
-                &kp C_VOLUME_UP       &kp C_VOLUME_DOWN        &kp C_REWIND          &kp C_FAST_FORWARD
-                &kp C_STOP            &kp C_PAUSE              &none                 &none
+&kt LG(C)      &kp LG(V)             &kp LG(X)             &kp LG(Z)
+&kp LG(LS(Z))  &kp LG(S)             &kp LG(F)             &kp LG(A)
+&kp LG(N)      &kp LG(LS(NUMBER_4))  &kp LG(LS(NUMBER_3))  &none
             >;
         };
 
         KiCad {
             display-name = "KiCad";
             bindings = <
-                &kp R                 &kp M                    &kp G                 &kp DEL
-                &kp V                 &kp E                    &kp X                 &kp W
-                &kp B                 &kp F                    &kp H                 &none
+&kp R  &kp M  &kp G  &kp DEL
+&kp V  &kp E  &kp X  &kp W
+&kp B  &kp F  &kp H  &none
             >;
         };
 
         Fusion {
             display-name = "Fusion";
             bindings = <
-                &kp S                 &kp R                    &kp L                 &kp D
-                &kp E                 &kp Q                    &kp F                 &kp LG(Z)
-                &kp LG(N1)            &kp LG(N2)               &kp LG(N0)            &trans
+&kp S       &kp R       &kp L       &kp D
+&kp E       &kp Q       &kp F       &kp LG(Z)
+&kp LG(N1)  &kp LG(N2)  &kp LG(N0)  &trans
             >;
         };
 
         VS-Code {
             display-name = "VS-Code";
             bindings = <
-                &kp LG(P)             &kp LS(LG(P))            &kp LG(B)             &kp LG(FSLH)
-                &kp LG(D)             &kp LS(LG(L))            &kp LG(F)             &kp LG(Z)
-                &kp LG(SQT)           &kp LS(LG(F))            &kp LS(LG(E))         &trans
+&kp LG(P)    &kp LS(LG(P))  &kp LG(B)      &kp LG(FSLH)
+&kp LG(D)    &kp LS(LG(L))  &kp LG(F)      &kp LG(Z)
+&kp LG(SQT)  &kp LS(LG(F))  &kp LS(LG(E))  &trans
             >;
         };
 
         Arduino {
             display-name = "Arduino";
             bindings = <
-                &kp LG(R)             &kp LG(U)                &kp LS(LG(M))         &kp LG(K)
-                &kp T                 &kp LG(Z)                &kp LS(LG(Z))         &kp LG(F)
-                &kp N                 &kp LG(O)                &kp LG(S)             &trans
+&kp LG(R)  &kp LG(U)  &kp LS(LG(M))  &kp LG(K)
+&kp LG(T)  &kp LG(Z)  &kp LS(LG(Z))  &kp LG(F)
+&kp LG(N)  &kp LG(O)  &kp LG(S)      &trans
             >;
         };
     };
