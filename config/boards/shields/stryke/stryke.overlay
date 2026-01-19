@@ -6,15 +6,15 @@
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         label = "default_kscan";
-        diode-direction = "col2row"; // Cathodes pointing to rows
+        diode-direction = "col2row";
         poll-period-ms = <20>;
 
-        // Schematic Right Side: Pin 7 (P0.17), Pin 8 (P0.20), Pin 9 (P0.22)
+        // Rows
         row-gpios = <&pro_micro 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
                     <&pro_micro 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
                     <&pro_micro 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
         
-        // Schematic Left Side: Pin 4 (P0.02), Pin 5 (P1.13), Pin 6 (P1.15), Pin 7 (P0.02)
+        // Columns
         col-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
                     <&pro_micro 5 GPIO_ACTIVE_HIGH>,
                     <&pro_micro 6 GPIO_ACTIVE_HIGH>,
@@ -63,7 +63,6 @@
 &pinctrl {
     spi3_default: spi3_default {
         group1 {
-            // Signal line is on P0.15 (Physical Pin 20 on right side)
             psels = <NRF_PSEL(SPIM_MOSI, 0, 15)>;
         };
     };
