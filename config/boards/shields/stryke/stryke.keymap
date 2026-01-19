@@ -4,7 +4,6 @@
 
 / {
     macros {
-        // Shared fading logic: 10 steps down, change color, 10 steps up
         to_kicad: to_kicad {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
