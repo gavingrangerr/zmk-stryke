@@ -1,38 +1,43 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
-#include <dt-bindings/zmk/rgb.h> // REQUIRED FOR RGB
+#include <dt-bindings/zmk/rgb.h>
 
 / {
     macros {
-        // Macro: Go to KiCad (Red)
-        to_kicad: to_kicad {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(352,85,50) &tog 1>;
-        };
-        // Macro: Go to Fusion (Orange)
-        to_fusion: to_fusion {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(26,91,50) &tog 2>;
-        };
-        // Macro: Go to VS Code (Blue)
-        to_vscode: to_vscode {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(204,100,50) &tog 3>;
-        };
-        // Macro: Go to Arduino (Teal)
-        to_arduino: to_arduino {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(182,100,40) &tog 4>;
-        };
-        // Macro: Back to Base (White)
+        // Base: White (0,0,100)
         to_base: to_base {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(0,0,100) &tog 0>;
+            wait-ms = <30>;
+            bindings = <&rgb_ug RGB_COLOR_HSB(0,0,50)>, <&rgb_ug RGB_COLOR_HSB(0,0,100)>, <&tog 0>;
+        };
+        // KiCad: Red (352,85,50)
+        to_kicad: to_kicad {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <30>;
+            bindings = <&rgb_ug RGB_COLOR_HSB(352,40,20)>, <&rgb_ug RGB_COLOR_HSB(352,85,50)>, <&tog 1>;
+        };
+        // Fusion: Orange (26,91,50)
+        to_fusion: to_fusion {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <30>;
+            bindings = <&rgb_ug RGB_COLOR_HSB(26,45,25)>, <&rgb_ug RGB_COLOR_HSB(26,91,50)>, <&tog 2>;
+        };
+        // VS-Code: Blue (204,100,50)
+        to_vscode: to_vscode {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <30>;
+            bindings = <&rgb_ug RGB_COLOR_HSB(204,50,25)>, <&rgb_ug RGB_COLOR_HSB(204,100,50)>, <&tog 3>;
+        };
+        // Arduino: Teal (182,100,40)
+        to_arduino: to_arduino {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <30>;
+            bindings = <&rgb_ug RGB_COLOR_HSB(182,50,20)>, <&rgb_ug RGB_COLOR_HSB(182,100,40)>, <&tog 4>;
         };
     };
 
@@ -42,7 +47,7 @@
         Base {
             display-name = "Base";
             bindings = <
-                &kp LG(C)             &kp LG(V)             &kp LG(X)       &kp LG(Z)
+                &kt LG(C)             &kp LG(V)             &kp LG(X)       &kp LG(Z)
                 &kp LG(A)             &kp LG(S)             &kp LG(F)       &kp LG(LS(Z))
                 &kp LG(LS(NUMBER_3))  &kp LG(LS(NUMBER_4))  &kp LG(LS(N5))  &to_kicad
             >;
