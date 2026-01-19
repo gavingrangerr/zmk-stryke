@@ -36,7 +36,7 @@
         Fusion {
             display-name = "Fusion";
             bindings = <
-                &kp S                 &kp R                 &kp L           &kp D
+                &kp LG(K)             &kp R                 &kp L           &kp D
                 &kp E                 &kp Q                 &kp F           &kp LG(Z)
                 &kp LG(N1)            &kp LG(N2)            &kp LG(N0)      &tog 3
             >;
