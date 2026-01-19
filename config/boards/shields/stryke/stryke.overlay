@@ -1,5 +1,6 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
+#include <dt-bindings/led/led.h>
 
 / {  
     default_kscan: kscan {
@@ -8,7 +9,7 @@
         diode-direction = "col2row";
         poll-period-ms = <20>;
 
-        // 3 Rows
+        // 3 Rows - Pin numbers matched to your pro_micro labels
         row-gpios = <&pro_micro 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
                     <&pro_micro 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,
                     <&pro_micro 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
@@ -59,5 +60,41 @@
     chosen {
         zmk,kscan = &default_kscan;
         zmk,physical-layout = &physical_layout0;
+        zmk,underglow = &led_strip;
     };    
+};
+
+/* --- RGB LED Configuration --- */
+
+&pinctrl {
+    spi3_default: spi3_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 20)>; // Pin 20 based on KiCad
+        };
+    };
+
+    spi3_sleep: spi3_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 20)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi3 {
+    compatible = "nordic,nrf-spim";
+    status = "okay";
+    pinctrl-0 = <&spi3_default>;
+    pinctrl-1 = <&spi3_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    led_strip: ws2812@0 {
+        compatible = "worldsemi,ws2812-spi";
+        reg = <0>;
+        spi-max-frequency = <4000000>;
+        chain-length = <6>; // Number of LEDs in your KiCad schematic
+        spi-one-frame = <0x70>;
+        spi-zero-frame = <0x40>;
+        color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
+    };
 };
