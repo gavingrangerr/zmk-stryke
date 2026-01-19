@@ -4,30 +4,50 @@
 
 / {
     macros {
+        // Modified macros with delays for smoother transitions
         to_kicad: to_kicad {
             compatible = "zmk,behavior-macro";
+            label = "TO_KICAD";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(352,85,50) &tog 1>;
+            wait-ms = <5>;
+            tap-ms = <5>;
+            bindings = <&tog 1>, <&rgb_ug RGB_COLOR_HSB(352,85,50)>;
         };
+        
         to_fusion: to_fusion {
             compatible = "zmk,behavior-macro";
+            label = "TO_FUSION";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(26,91,50) &tog 2>;
+            wait-ms = <5>;
+            tap-ms = <5>;
+            bindings = <&tog 2>, <&rgb_ug RGB_COLOR_HSB(26,91,50)>;
         };
+        
         to_vscode: to_vscode {
             compatible = "zmk,behavior-macro";
+            label = "TO_VSCODE";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(204,100,50) &tog 3>;
+            wait-ms = <5>;
+            tap-ms = <5>;
+            bindings = <&tog 3>, <&rgb_ug RGB_COLOR_HSB(204,100,50)>;
         };
+        
         to_arduino: to_arduino {
             compatible = "zmk,behavior-macro";
+            label = "TO_ARDUINO";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(182,100,40) &tog 4>;
+            wait-ms = <5>;
+            tap-ms = <5>;
+            bindings = <&tog 4>, <&rgb_ug RGB_COLOR_HSB(182,100,40)>;
         };
+        
         to_base: to_base {
             compatible = "zmk,behavior-macro";
+            label = "TO_BASE";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(0,0,100) &tog 0>;
+            wait-ms = <5>;
+            tap-ms = <5>;
+            bindings = <&tog 0>, <&rgb_ug RGB_COLOR_HSB(0,0,100)>;
         };
     };
 
