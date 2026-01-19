@@ -52,7 +52,7 @@
         };
 
         Arduino {
-            display-name = "Arduino";
+            display-name = "Arduino IDE";
             bindings = <
                 &kp LG(R)             &kp LG(U)             &kp LS(LG(M))   &kp LG(K)
                 &kp LG(T)             &kp LG(Z)             &kp LS(LG(Z))   &kp LG(F)
