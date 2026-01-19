@@ -4,10 +4,9 @@
 
 / {
     macros {
-        // Modified macros with delays for smoother transitions
+        // Remove the deprecated "label" property
         to_kicad: to_kicad {
             compatible = "zmk,behavior-macro";
-            label = "TO_KICAD";
             #binding-cells = <0>;
             wait-ms = <5>;
             tap-ms = <5>;
@@ -16,7 +15,6 @@
         
         to_fusion: to_fusion {
             compatible = "zmk,behavior-macro";
-            label = "TO_FUSION";
             #binding-cells = <0>;
             wait-ms = <5>;
             tap-ms = <5>;
@@ -25,7 +23,6 @@
         
         to_vscode: to_vscode {
             compatible = "zmk,behavior-macro";
-            label = "TO_VSCODE";
             #binding-cells = <0>;
             wait-ms = <5>;
             tap-ms = <5>;
@@ -34,7 +31,6 @@
         
         to_arduino: to_arduino {
             compatible = "zmk,behavior-macro";
-            label = "TO_ARDUINO";
             #binding-cells = <0>;
             wait-ms = <5>;
             tap-ms = <5>;
@@ -43,7 +39,6 @@
         
         to_base: to_base {
             compatible = "zmk,behavior-macro";
-            label = "TO_BASE";
             #binding-cells = <0>;
             wait-ms = <5>;
             tap-ms = <5>;
