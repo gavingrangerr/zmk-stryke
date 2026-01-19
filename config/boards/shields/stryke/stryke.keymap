@@ -4,36 +4,65 @@
 
 / {
     macros {
+        // Shared fading logic: 10 steps down, change color, 10 steps up
         to_kicad: to_kicad {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(352,85,50) &tog 1>;
+            wait-ms = <15>; 
+            tap-ms = <15>;
+            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
+                       <&rgb_ug RGB_COLOR_HSB(352,85,50)>,
+                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
+                       <&tog 1>;
         };
+
         to_fusion: to_fusion {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(26,91,50) &tog 2>;
+            wait-ms = <15>;
+            tap-ms = <15>;
+            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
+                       <&rgb_ug RGB_COLOR_HSB(26,91,50)>,
+                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
+                       <&tog 2>;
         };
+
         to_vscode: to_vscode {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(204,100,50) &tog 3>;
+            wait-ms = <15>;
+            tap-ms = <15>;
+            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
+                       <&rgb_ug RGB_COLOR_HSB(204,100,50)>,
+                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
+                       <&tog 3>;
         };
+
         to_arduino: to_arduino {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(182,100,40) &tog 4>;
+            wait-ms = <15>;
+            tap-ms = <15>;
+            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
+                       <&rgb_ug RGB_COLOR_HSB(182,100,40)>,
+                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
+                       <&tog 4>;
         };
+
         to_base: to_base {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&rgb_ug RGB_COLOR_HSB(0,0,100) &tog 0>;
+            wait-ms = <15>;
+            tap-ms = <15>;
+            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
+                       <&rgb_ug RGB_COLOR_HSB(0,0,100)>,
+                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
+                       <&tog 0>;
         };
     };
 
     keymap {
         compatible = "zmk,keymap";
-
         Base {
             display-name = "Base";
             bindings = <
@@ -61,7 +90,7 @@
             >;
         };
 
-        VS-Code {
+        VSCode {
             display-name = "VS-Code";
             bindings = <
                 &kp LG(P)             &kp LS(LG(P))         &kp LG(B)       &kp LG(FSLH)
