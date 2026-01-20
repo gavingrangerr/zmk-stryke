@@ -1,23 +1,28 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 
+/* This block disables the external flash driver to free up your column pins */
+&qspi {
+    status = "disabled";
+};
+
 / {  
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         label = "default_kscan";
-        diode-direction = "col2row";
-        poll-period-ms = <20>;
+        diode-direction = "col2row"; 
+        poll-period-ms = <10>;
 
-   // 3 Rows
-    row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, // Row 0: Pin 1.00
-                <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, // Row 1: Pin 0.11
-                <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; // Row 2: Pin 1.04
+        /* Rows using Active Low logic (Standard ZMK) */
+        row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                    <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                    <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-    // 4 Columns
-    col-gpios = <&gpio0 17 GPIO_ACTIVE_LOW>, // Col 0: Pin 0.17
-                <&gpio0 20 GPIO_ACTIVE_LOW>, // Col 1: Pin 0.20
-                <&gpio0 22 GPIO_ACTIVE_LOW>, // Col 2: Pin 0.22
-                <&gpio0 24 GPIO_ACTIVE_LOW>; // Col 3: Pin 0.24
+        /* Columns using Active Low logic */
+        col-gpios = <&gpio0 17 GPIO_ACTIVE_LOW>, 
+                    <&gpio0 20 GPIO_ACTIVE_LOW>, 
+                    <&gpio0 22 GPIO_ACTIVE_LOW>, 
+                    <&gpio0 24 GPIO_ACTIVE_LOW>;
     };
     
     default_transform: matrix_transform {
@@ -38,26 +43,19 @@
         transform = <&default_transform>;
         kscan = <&default_kscan>;
         
-        keys  //               w   h     x    y     rot   rx    ry
-            = <&key_physical_attrs 100 100     0    0       0     0     0> // Row 0
+        keys 
+            = <&key_physical_attrs 100 100     0    0       0     0     0>
             , <&key_physical_attrs 100 100   100    0       0     0     0>
             , <&key_physical_attrs 100 100   200    0       0     0     0>
             , <&key_physical_attrs 100 100   300    0       0     0     0>
-            
-            , <&key_physical_attrs 100 100     0   100      0     0     0> // Row 1
+            , <&key_physical_attrs 100 100     0   100      0     0     0>
             , <&key_physical_attrs 100 100   100   100      0     0     0>
             , <&key_physical_attrs 100 100   200   100      0     0     0>
             , <&key_physical_attrs 100 100   300   100      0     0     0>
-            
-            , <&key_physical_attrs 100 100     0   200      0     0     0> // Row 2
+            , <&key_physical_attrs 100 100     0   200      0     0     0>
             , <&key_physical_attrs 100 100   100   200      0     0     0>
             , <&key_physical_attrs 100 100   200   200      0     0     0>
             , <&key_physical_attrs 100 100   300   200      0     0     0>
             ;
     };
-    
-    chosen {
-        zmk,kscan = &default_kscan;
-        zmk,physical-layout = &physical_layout0;
-    };    
 };
