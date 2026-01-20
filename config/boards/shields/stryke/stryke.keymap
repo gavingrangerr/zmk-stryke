@@ -7,32 +7,32 @@
     led_indicators {
         compatible = "zmk,led-indicators";
 
-        layer0_red {
-            leds = <&red_led>;
+        layer0_led {
+            leds = <&blue_led>;
             layers = <0>;
             brightness = <0>;
         };
 
-        layer1_red {
-            leds = <&red_led>;
+        layer1_led {
+            leds = <&blue_led>;
             layers = <1>;
-            brightness = <20>;
+            brightness = <10>;
         };
 
-        layer2_red {
-            leds = <&red_led>;
+        layer2_led {
+            leds = <&blue_led>;
             layers = <2>;
-            brightness = <45>;
+            brightness = <35>;
         };
 
-        layer3_red {
-            leds = <&red_led>;
+        layer3_led {
+            leds = <&blue_led>;
             layers = <3>;
-            brightness = <70>;
+            brightness = <65>;
         };
 
-        layer4_red {
-            leds = <&red_led>;
+        layer4_led {
+            leds = <&blue_led>;
             layers = <4>;
             brightness = <100>;
         };
