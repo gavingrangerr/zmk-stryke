@@ -6,7 +6,7 @@
     keymap {
         compatible = "zmk,keymap";
 
-        Base_Layer {
+        Base {
             display-name = "Base";
             bindings = <
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
@@ -15,7 +15,7 @@
             >;
         };
 
-        KiCad_Layer {
+        KiCad {
             display-name = "KiCad";
             bindings = <
                 &kp R           &kp M           &kp G           &kp DEL
@@ -24,7 +24,7 @@
             >;
         };
 
-        Fusion_Layer {
+        Fusion {
             display-name = "Fusion";
             bindings = <
                 &kp LG(K)       &kp R           &kp L           &kp D
@@ -33,7 +33,7 @@
             >;
         };
 
-        VSCode_Layer {
+        VS_Code {
             display-name = "VS-Code";
             bindings = <
                 &kp LG(P)       &kp LS(LG(P))   &kp LG(B)       &kp LG(FSLH)
@@ -42,7 +42,7 @@
             >;
         };
 
-        Arduino_Layer {
+        Arduino {
             display-name = "Arduino";
             bindings = <
                 &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
