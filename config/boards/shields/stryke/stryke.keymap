@@ -3,12 +3,6 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
-    /* Connects the keymap to the hardware transform and layout */
-    chosen {
-        zmk,matrix-transform = &default_transform;
-        zmk,physical-layout = &physical_layout0;
-    };
-
     keymap {
         compatible = "zmk,keymap";
 
