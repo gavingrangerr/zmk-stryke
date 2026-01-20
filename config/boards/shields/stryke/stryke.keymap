@@ -23,7 +23,7 @@
                 &kp B           &kp F           &kp H           &tog 2
             >;
         };
-
+        
         Fusion {
             display-name = "Fusion";
             bindings = <
