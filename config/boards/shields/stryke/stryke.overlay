@@ -3,12 +3,11 @@
 #include <dt-bindings/led/led.h>
 
 / {
-    /* 1. Link the backlight system to our PWM definition */
+    /* This links the backlight system to your hardware definition below */
     chosen {
         zmk,backlight = &backlight;
     };
 
-    /* 2. Your existing matrix scan configuration */
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
@@ -24,7 +23,6 @@
                     <&gpio0 24 GPIO_ACTIVE_HIGH>;
     };
     
-    /* 3. Your existing transform */
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         rows = <3>;
@@ -36,7 +34,6 @@
         >;
     };
 
-    /* 4. Your existing physical layout */
     physical_layout0: physical_layout_0 {
         compatible = "zmk,physical-layout";
         display-name = "NexusPro";
@@ -58,17 +55,17 @@
             ;
     };
 
-    /* 5. PWM LED Definition for the Blue LED (Pin P0.15) */
+    /* Define the LED on pin P0.15 */
     backlight: pwmleds {
         compatible = "pwm-leds";
         pwm_led_0 {
+            /* 10ms period is standard for smooth dimming */
             pwms = <&pwm0 0 PWM_MSEC(10) PWM_POLARITY_NORMAL>;
-            label = "Onboard Blue LED";
         };
     };
 };
 
-/* 6. Hardware Pin Control for Pin 0.15 */
+/* Hardware Pin Control for the nice!nano blue LED */
 &pinctrl {
     pwm0_default: pwm0_default {
         group1 {
@@ -83,7 +80,6 @@
     };
 };
 
-/* 7. Enable the PWM driver */
 &pwm0 {
     status = "okay";
     pinctrl-0 = <&pwm0_default>;
