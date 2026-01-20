@@ -6,7 +6,7 @@
     default_kscan: kscan {
     compatible = "zmk,kscan-gpio-matrix";
     label = "default_kscan";
-    diode-direction = "col2row"; // Change to "row2col" if keys still don't work
+    diode-direction = "row2col"; // Change to "row2col" if keys still don't work
     poll-period-ms = <10>; // Standard 10ms for better responsiveness
 
     row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, // Corrected 1.00
