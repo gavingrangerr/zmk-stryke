@@ -1,7 +1,22 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
+#include <dt-bindings/led/led.h>  // Add this include
 
 / {  
+    leds {  // Add this leds node
+        compatible = "gpio-leds";
+        blue_led: led_0 {
+            gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+            label = "Blue LED";
+        };
+    };
+
+    poor_mans_led_indicator {  // Add this indicator node
+        compatible = "pm-led-indicator";
+        led-indicator = <&blue_led>;
+        status = "okay";
+    };
+
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
