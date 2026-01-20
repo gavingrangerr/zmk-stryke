@@ -1,25 +1,22 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 
-/* Note: You likely don't need the QSPI pinctrl override for these specific pins, 
-   as pins 6, 8, 15, 17, 20 are standard GPIOs on the nice!nano. */
-
 / {  
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
         poll-period-ms = <10>;
 
-        /* Schematic Pins 9, 10, 11 */
-        row-gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // Pin 9  (Row 0)
-                    <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // Pin 10 (Row 1)
-                    <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // Pin 11 (Row 2)
+        /* Rows: P1.00, P0.11, P1.04 */
+        row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                    <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                    <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-        /* Schematic Pins 5, 6, 7, 8 */
-        col-gpios = <&gpio0 6  GPIO_ACTIVE_HIGH>, // Pin 5 (Col 0)
-                    <&gpio0 8  GPIO_ACTIVE_HIGH>, // Pin 6 (Col 1)
-                    <&gpio1 9  GPIO_ACTIVE_HIGH>, // Pin 7 (Col 2)
-                    <&gpio0 12 GPIO_ACTIVE_HIGH>; // Pin 8 (Col 3)
+        /* Columns moved to safe v1 Pins: D0, D1, D4, D5 */
+        col-gpios = <&gpio0 8  GPIO_ACTIVE_LOW>, // Pin D0 (P0.08)
+                    <&gpio0 6  GPIO_ACTIVE_LOW>, // Pin D1 (P0.06)
+                    <&gpio0 22 GPIO_ACTIVE_LOW>, // Pin D4 (P0.22) - usually safer on v1 than 17/20
+                    <&gpio0 24 GPIO_ACTIVE_LOW>; // Pin D5 (P0.24)
     };
     
     default_transform: matrix_transform {
