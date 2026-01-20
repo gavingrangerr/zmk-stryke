@@ -11,14 +11,14 @@
         diode-direction = "col2row"; 
         poll-period-ms = <10>;
 
-       row-gpios = <&pro_micro 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // P1.00 -> TX (Pin 1)
-            <&pro_micro 14 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // P0.11 -> MISO (Pin 14)
-            <&pro_micro 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // P1.04 -> SCLK (Pin 15)
+        row-gpios = <&pro_micro 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // P1.00 -> Pro_Micro pin 6
+                    <&pro_micro 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // P0.11 -> Pro_Micro pin 7
+                    <&pro_micro 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // P1.04 -> Pro_Micro pin 8
 
-        col-gpios = <&pro_micro 18 GPIO_ACTIVE_HIGH>, // P0.17 -> A0 (Pin 18)
-                    <&pro_micro 19 GPIO_ACTIVE_HIGH>, // P0.20 -> A1 (Pin 19)
-                    <&pro_micro 20 GPIO_ACTIVE_HIGH>, // P0.22 -> A2 (Pin 20)
-                    <&pro_micro 21 GPIO_ACTIVE_HIGH>; // P0.24 -> A3 (Pin 21)
+        col-gpios = <&pro_micro 2 GPIO_ACTIVE_HIGH>, // P0.17 -> Pro_Micro pin 2
+                    <&pro_micro 3 GPIO_ACTIVE_HIGH>, // P0.20 -> Pro_Micro pin 3
+                    <&pro_micro 4 GPIO_ACTIVE_HIGH>, // P0.22 -> Pro_Micro pin 4
+                    <&pro_micro 5 GPIO_ACTIVE_HIGH>; // P0.24 -> Pro_Micro pin 5
     };
     
     default_transform: matrix_transform {
