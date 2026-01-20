@@ -11,7 +11,7 @@
             bindings = <
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
                 &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(N3))  &kp LG(LS(N4))  &bootloader     &tog 1  // Use &bootloader here
+                &kp LG(LS(N3))  &kp LG(LS(N4))  &kp LG(LS(N5))  &tog 1
             >;
         };
 
