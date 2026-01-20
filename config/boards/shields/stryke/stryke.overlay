@@ -4,21 +4,19 @@
 
 / {  
     default_kscan: kscan {
-        compatible = "zmk,kscan-gpio-matrix";
-        label = "default_kscan";
-        diode-direction = "col2row";
-        poll-period-ms = <20>;
+    compatible = "zmk,kscan-gpio-matrix";
+    label = "default_kscan";
+    diode-direction = "col2row"; // Change to "row2col" if keys still don't work
+    poll-period-ms = <10>; // Standard 10ms for better responsiveness
 
-        // Rows are usually set to Active Low with Pull-ups
-        row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, // Row 0
-                    <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, // Row 1
-                    <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;  // Row 2
-        
-        // Columns are set to Active Low to pull the row down when pressed
-        col-gpios = <&gpio0 17 GPIO_ACTIVE_LOW>, // Col 0
-                    <&gpio0 20 GPIO_ACTIVE_LOW>, // Col 1
-                    <&gpio0 22 GPIO_ACTIVE_LOW>, // Col 2
-                    <&gpio0 24 GPIO_ACTIVE_LOW>; // Col 3
+    row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, // Corrected 1.00
+                <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;  // Corrected 1.04
+    
+    col-gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                <&gpio0 20 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                <&gpio0 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
+                <&gpio0 24 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
     };
     
     default_transform: matrix_transform {
@@ -34,7 +32,7 @@
     
     physical_layout0: physical_layout_0 {
         compatible = "zmk,physical-layout";
-        display-name = "stryke 2.0";
+        display-name = "NexusPro";
         transform = <&default_transform>;
         kscan = <&default_kscan>;
         keys = <&key_physical_attrs 100 100 0 0 0 0 0> 
