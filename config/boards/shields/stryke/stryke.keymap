@@ -3,41 +3,6 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
-    behaviors {
-        led_blue: led_blue {
-            compatible = "zmk,behavior-gpio-control";
-            #binding-cells = <0>;
-            gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
-        };
-    };
-
-    macros {
-        // Toggle Layer 1 and turn LED ON
-        tog_1_led: tog_1_led {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&macro_tap &tog 1 &led_blue>;
-        };
-        // Toggle Layer 2 (LED stays on)
-        tog_2_led: tog_2_led {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&macro_tap &tog 2>;
-        };
-        // Toggle Layer 3 (LED stays on)
-        tog_3_led: tog_3_led {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&macro_tap &tog 3>;
-        };
-        // Toggle back to Layer 0 and turn LED OFF
-        tog_0_led: tog_0_led {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings = <&macro_tap &tog 0 &led_blue>;
-        };
-    };
-
     keymap {
         compatible = "zmk,keymap";
 
@@ -46,7 +11,7 @@
             bindings = <
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
                 &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(N3))  &kp LG(LS(N4))  &kp LG(LS(N5))  &tog_1_led
+                &kp LG(LS(N3))  &kp LG(LS(N4))  &kp LG(LS(N5))  &tog 1
             >;
         };
 
@@ -55,7 +20,7 @@
             bindings = <
                 &kp R           &kp M           &kp G           &kp DEL
                 &kp V           &kp E           &kp X           &kp W
-                &kp B           &kp F           &kp H           &tog_2_led
+                &kp B           &kp F           &kp H           &tog 2
             >;
         };
         
@@ -64,7 +29,7 @@
             bindings = <
                 &kp LG(K)       &kp R           &kp L           &kp D
                 &kp E           &kp Q           &kp F           &kp LG(Z)
-                &kp LG(N1)      &kp LG(N2)      &kp LG(N0)      &tog_3_led
+                &kp LG(N1)      &kp LG(N2)      &kp LG(N0)      &tog 3
             >;
         };
 
@@ -82,7 +47,7 @@
             bindings = <
                 &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
                 &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
-                &bt BT_CLR      &bt BT_NXT      &bt BT_PRV      &tog_0_led
+                &bt BT_CLR      &bt BT_NXT      &bt BT_PRV      &tog 0
             >;
         };
     };
