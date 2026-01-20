@@ -5,7 +5,9 @@
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
-        poll-period-ms = <10>;
+        poll-period-ms = <1>; // High speed
+        debounce-press-ms = <1>; 
+        debounce-release-ms = <5>;
 
         row-gpios = <&gpio1 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
                     <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, 
