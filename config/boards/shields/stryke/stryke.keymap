@@ -62,8 +62,16 @@
 
     keymap {
         compatible = "zmk,keymap";
-        Base {
+        default_layer {
             display-name = "Base";
+            bindings = <
+                &kp A                 &kp B                 &kp C           &kp D
+                &kp E                 &kp F                 &kp G           &kp H
+                &kp I                 &kp J                 &kp K           &to_kicad
+            >;
+        };
+        Base {
+            display-name = "Base2";
             bindings = <
                 &kp LG(C)             &kp LG(V)             &kp LG(X)       &kp LG(Z)
                 &kp LG(A)             &kp LG(S)             &kp LG(F)       &kp LG(LS(Z))
