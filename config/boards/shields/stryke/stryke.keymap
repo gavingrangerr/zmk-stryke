@@ -11,7 +11,7 @@
             bindings = <
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
                 &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(N3))  &kp LG(LS(N4))  &kp LG(LS(N5))  &tog 1
+                &kp LG(LS(N3))  &kp LG(LS(N4))  &bootloader     &tog 1
             >;
         };
 
@@ -47,7 +47,7 @@
             bindings = <
                 &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
                 &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
-                &bt BT_CLR      &bt BT_NXT      &bt BT_PRV      &tog 0
+                &bt BT_CLR      &bt BT_NXT      &sys_reset      &tog 0
             >;
         };
     };
