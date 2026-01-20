@@ -11,4 +11,6 @@ config PWM
 config LED_PWM
     default y
 
-endif
+endif # Closes "if ZMK_BACKLIGHT"
+
+endif # Closes "if SHIELD_NUMPAD"
