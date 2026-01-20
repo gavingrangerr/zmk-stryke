@@ -2,9 +2,9 @@
 #include <physical_layouts.dtsi>
 #include <dt-bindings/led/led.h>
 
-/delete-node/ &led0;
-
 / {
+    /delete-node/ leds;
+
     backlight: pwmleds {
         compatible = "pwm-leds";
         blue_led: pwm_led_0 {
@@ -21,11 +21,9 @@
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
         poll-period-ms = <10>;
-
         row-gpios = <&gpio1 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, 
                     <&gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, 
                     <&gpio1 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
-
         col-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>, 
                     <&gpio0 20 GPIO_ACTIVE_HIGH>, 
                     <&gpio0 22 GPIO_ACTIVE_HIGH>, 
