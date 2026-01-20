@@ -11,14 +11,16 @@
         diode-direction = "col2row"; 
         poll-period-ms = <10>;
 
-        row-gpios = <&pro_micro 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // P1.00 -> Pro_Micro pin 6
-                    <&pro_micro 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // P0.11 -> Pro_Micro pin 7
-                    <&pro_micro 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // P1.04 -> Pro_Micro pin 8
+        /* Rows with ACTIVE_LOW and PULL_UP */
+        row-gpios = <&gpio1 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,  // Row 0
+                    <&gpio0 2  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,  // Row 1
+                    <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;  // Row 2
 
-        col-gpios = <&pro_micro 2 GPIO_ACTIVE_HIGH>, // P0.17 -> Pro_Micro pin 2
-                    <&pro_micro 3 GPIO_ACTIVE_HIGH>, // P0.20 -> Pro_Micro pin 3
-                    <&pro_micro 4 GPIO_ACTIVE_HIGH>, // P0.22 -> Pro_Micro pin 4
-                    <&pro_micro 5 GPIO_ACTIVE_HIGH>; // P0.24 -> Pro_Micro pin 5
+        /* Columns with ACTIVE_LOW */
+        col-gpios = <&gpio0 9  GPIO_ACTIVE_LOW>,  // Col 0
+                    <&gpio0 10 GPIO_ACTIVE_LOW>,  // Col 1
+                    <&gpio1 11 GPIO_ACTIVE_LOW>,  // Col 2
+                    <&gpio1 13 GPIO_ACTIVE_LOW>;  // Col 3
     };
     
     default_transform: matrix_transform {
