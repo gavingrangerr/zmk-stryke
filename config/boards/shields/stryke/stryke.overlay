@@ -1,7 +1,14 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 
-/ {  
+/ {
+    /* * The chosen node tells ZMK which hardware device to use 
+     * for specific features like backlighting.
+     */
+    chosen {
+        zmk,backlight = &backlight;
+    };
+
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
@@ -49,14 +56,14 @@
             ;
     };
 
-    /* --- ADDED BACKLIGHT DEVICE --- */
+    /* Define the backlight device using PWM channel 0 */
     backlight: backlight {
         compatible = "pwm-backlight";
         pwms = <&pwm0 0 5000 PWM_POLARITY_NORMAL>;
     };
 };
 
-/* --- PIN CONTROL DEFINITIONS --- */
+/* Define the pin routing for the nRF52840 (P1.13) */
 &pinctrl {
     pwm0_default: pwm0_default {
         group1 {
@@ -71,7 +78,7 @@
     };
 };
 
-/* --- PWM HARDWARE ENABLING --- */
+/* Enable the PWM hardware block */
 &pwm0 {
     status = "okay";
     pinctrl-0 = <&pwm0_default>;
