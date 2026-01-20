@@ -1,73 +1,26 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
-#include <dt-bindings/zmk/rgb.h>
 
 / {
-    macros {
-        to_kicad: to_kicad {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            wait-ms = <15>; 
-            tap-ms = <15>;
-            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
-                       <&rgb_ug RGB_COLOR_HSB(352,85,50)>,
-                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
-                       <&tog 1>;
-        };
+    combos {
+        compatible = "zmk,combos";
 
-        to_fusion: to_fusion {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            wait-ms = <15>;
-            tap-ms = <15>;
-            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
-                       <&rgb_ug RGB_COLOR_HSB(26,91,50)>,
-                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
-                       <&tog 2>;
-        };
-
-        to_vscode: to_vscode {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            wait-ms = <15>;
-            tap-ms = <15>;
-            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
-                       <&rgb_ug RGB_COLOR_HSB(204,100,50)>,
-                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
-                       <&tog 3>;
-        };
-
-        to_arduino: to_arduino {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            wait-ms = <15>;
-            tap-ms = <15>;
-            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
-                       <&rgb_ug RGB_COLOR_HSB(182,100,40)>,
-                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
-                       <&tog 4>;
-        };
-
-        to_base: to_base {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            wait-ms = <15>;
-            tap-ms = <15>;
-            bindings = <&rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD &rgb_ug RGB_BRD>,
-                       <&rgb_ug RGB_COLOR_HSB(0,0,100)>,
-                       <&rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI &rgb_ug RGB_BRI>,
-                       <&tog 0>;
+        combo_activate_layer_1 {
+            timeout-ms = <50>;
+            key-positions = <8 10>;
+            bindings = <&mo 1>;
         };
     };
 
     keymap {
         compatible = "zmk,keymap";
+
         Base {
             display-name = "Base";
             bindings = <
-                &kp LG(C)             &kp LG(V)             &kp LG(X)       &kp LG(Z)
+                &kt LG(C)             &kp LG(V)             &kp LG(X)       &kp LG(Z)
                 &kp LG(A)             &kp LG(S)             &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(NUMBER_3))  &kp LG(LS(NUMBER_4))  &kp LG(LS(N5))  &to_kicad
+                &kp LG(LS(NUMBER_3))  &kp LG(LS(NUMBER_4))  &kp LG(LS(N5))  &tog 1
             >;
         };
 
@@ -76,7 +29,7 @@
             bindings = <
                 &kp R                 &kp M                 &kp G           &kp DEL
                 &kp V                 &kp E                 &kp X           &kp W
-                &kp B                 &kp F                 &kp H           &to_fusion
+                &kp B                 &kp F                 &kp H           &tog 2
             >;
         };
 
@@ -85,16 +38,16 @@
             bindings = <
                 &kp LG(K)             &kp R                 &kp L           &kp D
                 &kp E                 &kp Q                 &kp F           &kp LG(Z)
-                &kp LG(N1)            &kp LG(N2)            &kp LG(N0)      &to_vscode
+                &kp LG(N1)            &kp LG(N2)            &kp LG(N0)      &tog 3
             >;
         };
 
-        VSCode {
+        VS-Code {
             display-name = "VS-Code";
             bindings = <
                 &kp LG(P)             &kp LS(LG(P))         &kp LG(B)       &kp LG(FSLH)
                 &kp LG(D)             &kp LS(LG(L))         &kp LG(F)       &kp LG(Z)
-                &kp LG(SQT)           &kp LS(LG(F))         &kp LS(LG(E))   &to_arduino
+                &kp LG(SQT)           &kp LS(LG(F))         &kp LS(LG(E))   &tog 4
             >;
         };
 
@@ -103,7 +56,7 @@
             bindings = <
                 &kp LG(R)             &kp LG(U)             &kp LS(LG(M))   &kp LG(K)
                 &kp LG(T)             &kp LG(Z)             &kp LS(LG(Z))   &kp LG(F)
-                &kp LG(N)             &kp LG(O)             &kp LG(S)       &to_base
+                &kp LG(N)             &kp LG(O)             &kp LG(S)       &tog 0
             >;
         };
     };
