@@ -11,16 +11,14 @@
         diode-direction = "col2row"; 
         poll-period-ms = <10>;
 
-        /* Rows (Inputs): ACTIVE_HIGH with PULL_DOWN for nice!nano v2 */
-        row-gpios = <&gpio1 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // Row 0: P1.00
-                    <&gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // Row 1: P0.11
-                    <&gpio1 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;  // Row 2: P1.04
+       row-gpios = <&pro_micro 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // P1.00 -> TX (Pin 1)
+            <&pro_micro 14 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // P0.11 -> MISO (Pin 14)
+            <&pro_micro 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // P1.04 -> SCLK (Pin 15)
 
-        /* Columns (Outputs): ACTIVE_HIGH */
-        col-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>, // Col 0: P0.17
-                    <&gpio0 20 GPIO_ACTIVE_HIGH>, // Col 1: P0.20
-                    <&gpio0 22 GPIO_ACTIVE_HIGH>, // Col 2: P0.22
-                    <&gpio0 24 GPIO_ACTIVE_HIGH>; // Col 3: P0.24
+        col-gpios = <&pro_micro 18 GPIO_ACTIVE_HIGH>, // P0.17 -> A0 (Pin 18)
+                    <&pro_micro 19 GPIO_ACTIVE_HIGH>, // P0.20 -> A1 (Pin 19)
+                    <&pro_micro 20 GPIO_ACTIVE_HIGH>, // P0.22 -> A2 (Pin 20)
+                    <&pro_micro 21 GPIO_ACTIVE_HIGH>; // P0.24 -> A3 (Pin 21)
     };
     
     default_transform: matrix_transform {
