@@ -1,32 +1,32 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/backlight.h>
 
 / {
- 
     led_indicators {
         compatible = "zmk,led-indicators";
 
         layer1_led {
-            leds = <&led0>;
+            leds = <&blue_led>;
             layers = <1>;
             brightness = <25>;
         };
 
         layer2_led {
-            leds = <&led0>;
+            leds = <&blue_led>;
             layers = <2>;
             brightness = <50>;
         };
 
         layer3_led {
-            leds = <&led0>;
+            leds = <&blue_led>;
             layers = <3>;
             brightness = <75>;
         };
 
         layer4_led {
-            leds = <&led0>;
+            leds = <&blue_led>;
             layers = <4>;
             brightness = <100>;
         };
