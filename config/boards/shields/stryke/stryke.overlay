@@ -1,6 +1,5 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
-#include <dt-bindings/led/led.h>
 
 / {  
     default_kscan: kscan {
@@ -53,16 +52,7 @@
     pwmleds {
         compatible = "pwm-leds";
         pwm_led0: pwm_led_0 {
-            pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
-            label = "Blue LED";
-        };
-    };
-
-    backlight: pwmbacklight {
-        compatible = "pwm-leds";
-        status = "okay";
-        pwm_led {
-            pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
+            pwms = <&pwm0 0 20000 0>;
         };
     };
 };
