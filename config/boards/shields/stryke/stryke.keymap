@@ -3,6 +3,35 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+ 
+    led_indicators {
+        compatible = "zmk,led-indicators";
+
+        layer1_led {
+            leds = <&led0>;
+            layers = <1>;
+            brightness = <25>;
+        };
+
+        layer2_led {
+            leds = <&led0>;
+            layers = <2>;
+            brightness = <50>;
+        };
+
+        layer3_led {
+            leds = <&led0>;
+            layers = <3>;
+            brightness = <75>;
+        };
+
+        layer4_led {
+            leds = <&led0>;
+            layers = <4>;
+            brightness = <100>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
