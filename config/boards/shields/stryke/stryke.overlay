@@ -2,6 +2,18 @@
 #include <physical_layouts.dtsi>
 
 / {  
+    aliases {
+        led0 = &blue_led;
+    };
+
+    leds {
+        compatible = "gpio-leds";
+        blue_led: led_0 {
+            gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+            label = "Blue LED";
+        };
+    };
+
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
