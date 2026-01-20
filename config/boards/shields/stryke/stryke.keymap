@@ -3,6 +3,87 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+    /* ---------------- LED FLASH MACROS ---------------- */
+
+    macros {
+        led_flash_1: led_flash_1 {
+            compatible = "zmk,behavior-macro";
+            label = "LED_FLASH_1";
+            #binding-cells = <0>;
+            bindings = <
+                &bled 0.2
+                &ms 120
+                &bled 0
+            >;
+        };
+
+        led_flash_2: led_flash_2 {
+            compatible = "zmk,behavior-macro";
+            label = "LED_FLASH_2";
+            #binding-cells = <0>;
+            bindings = <
+                &bled 0.2 &ms 120 &bled 0 &ms 120
+                &bled 0.2 &ms 120 &bled 0
+            >;
+        };
+
+        led_flash_3: led_flash_3 {
+            compatible = "zmk,behavior-macro";
+            label = "LED_FLASH_3";
+            #binding-cells = <0>;
+            bindings = <
+                &bled 0.2 &ms 120 &bled 0 &ms 120
+                &bled 0.2 &ms 120 &bled 0 &ms 120
+                &bled 0.2 &ms 120 &bled 0
+            >;
+        };
+
+        led_flash_4: led_flash_4 {
+            compatible = "zmk,behavior-macro";
+            label = "LED_FLASH_4";
+            #binding-cells = <0>;
+            bindings = <
+                &bled 0.2 &ms 120 &bled 0 &ms 120
+                &bled 0.2 &ms 120 &bled 0 &ms 120
+                &bled 0.2 &ms 120 &bled 0 &ms 120
+                &bled 0.2 &ms 120 &bled 0
+            >;
+        };
+    };
+
+    /* ------------- LAYER → LED FLASH HOOKS ------------- */
+
+    conditional_layers {
+        compatible = "zmk,conditional-layers";
+
+        base_led {
+            if-layers = <0>;
+            then-bindings = <&led_flash_1>;
+        };
+
+        kicad_led {
+            if-layers = <1>;
+            then-bindings = <&led_flash_2>;
+        };
+
+        fusion_led {
+            if-layers = <2>;
+            then-bindings = <&led_flash_3>;
+        };
+
+        vscode_led {
+            if-layers = <3>;
+            then-bindings = <&led_flash_4>;
+        };
+
+        arduino_led {
+            if-layers = <4>;
+            then-bindings = <&led_flash_1>;
+        };
+    };
+
+    /* -------------------- KEYMAP ----------------------- */
+
     keymap {
         compatible = "zmk,keymap";
 
@@ -23,7 +104,7 @@
                 &kp B           &kp F           &kp H           &tog 2
             >;
         };
-        
+
         Fusion {
             display-name = "Fusion";
             bindings = <
