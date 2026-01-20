@@ -1,38 +1,18 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-#include <dt-bindings/led/led.h>
 #include <physical_layouts.dtsi>
 
-/ {  
-    // Configure the nice!nano v2 LEDs
+/ {
+    /* The widget module looks for the led0 alias to identify the status LED */
+    aliases {
+        led0 = &blue_led;
+    };
+
     leds {
         compatible = "gpio-leds";
-        
-        // Blue LED (P1.10) - will stay solid
-        blue_led: led_blue {
-            gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+        blue_led: led_0 {
+            gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
             label = "Blue LED";
         };
-        
-        // Red LED (P1.09) - will flash for layer changes
-        red_led: led_red {
-            gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
-            label = "Red LED";
-        };
-    };
-
-    // Custom behavior to keep blue LED always on
-    behaviors {
-        blue_on: blue_on_behavior {
-            compatible = "zmk,behavior-gpio";
-            #binding-cells = <0>;
-            gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
-            label = "BLUE_ON";
-        };
-    };
-
-    // Make blue LED turn on at startup
-    chosen {
-        zmk,backlight = &blue_led;
     };
 
     default_kscan: kscan {
