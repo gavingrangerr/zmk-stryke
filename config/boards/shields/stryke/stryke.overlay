@@ -48,4 +48,33 @@
             , <&key_physical_attrs 100 100   300   200      0     0     0>
             ;
     };
+
+    /* --- ADDED BACKLIGHT DEVICE --- */
+    backlight: backlight {
+        compatible = "pwm-backlight";
+        pwms = <&pwm0 0 5000 PWM_POLARITY_NORMAL>;
+    };
+};
+
+/* --- PIN CONTROL DEFINITIONS --- */
+&pinctrl {
+    pwm0_default: pwm0_default {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 1, 13)>;
+        };
+    };
+    pwm0_sleep: pwm0_sleep {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 1, 13)>;
+            low-power-enable;
+        };
+    };
+};
+
+/* --- PWM HARDWARE ENABLING --- */
+&pwm0 {
+    status = "okay";
+    pinctrl-0 = <&pwm0_default>;
+    pinctrl-1 = <&pwm0_sleep>;
+    pinctrl-names = "default", "sleep";
 };
