@@ -3,13 +3,6 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
-    behaviors {
-        reset_key: reset_behavior {
-            compatible = "zmk,behavior-reset";
-            #binding-cells = <0>;
-        };
-    };
-
     keymap {
         compatible = "zmk,keymap";
 
@@ -18,7 +11,7 @@
             bindings = <
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
                 &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(N3))  &kp LG(LS(N4))  &reset_key      &tog 1  // Changed LG(LS(N5)) to reset_key
+                &kp LG(LS(N3))  &kp LG(LS(N4))  &bootloader     &tog 1  // Use &bootloader here
             >;
         };
 
