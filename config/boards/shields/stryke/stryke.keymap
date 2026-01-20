@@ -1,7 +1,6 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
-#include <dt-bindings/zmk/backlight.h>
 
 / {
     keymap {
@@ -46,8 +45,8 @@
         Arduino {
             display-name = "Arduino";
             bindings = <
-                &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &bl BL_CYCLE
-                &kp LG(T)       &kp LG(Z)       &kp LG(L)       &bl BL_TOG
+                &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
+                &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
                 &bt BT_CLR      &bt BT_NXT      &sys_reset      &tog 0
             >;
         };
