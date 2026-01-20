@@ -10,19 +10,19 @@
         layer1_led {
             leds = <&blue_led>;
             layers = <1>;
-            brightness = <25>;
+            brightness = <10>;
         };
 
         layer2_led {
             leds = <&blue_led>;
             layers = <2>;
-            brightness = <50>;
+            brightness = <35>;
         };
 
         layer3_led {
             leds = <&blue_led>;
             layers = <3>;
-            brightness = <75>;
+            brightness = <65>;
         };
 
         layer4_led {

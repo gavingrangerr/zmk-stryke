@@ -2,6 +2,8 @@
 #include <physical_layouts.dtsi>
 #include <dt-bindings/led/led.h>
 
+/delete-node/ &led0;
+
 / {
     backlight: pwmleds {
         compatible = "pwm-leds";
