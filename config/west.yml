@@ -3,14 +3,14 @@ manifest:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
     - name: petejohanson
-      url-base: https://github.com/petejohanson  # Add this remote
+      url-base: https://github.com/petejohanson
 
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: v0.3
       import: app/west.yml
-    - name: poor-mans-led-indicator
+    - name: zmk-poor-mans-led-indicator
       remote: petejohanson
       revision: main
       import: app/west.yml
