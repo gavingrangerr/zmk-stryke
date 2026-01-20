@@ -7,6 +7,12 @@
     led_indicators {
         compatible = "zmk,led-indicators";
 
+        layer0_led {
+            leds = <&blue_led>;
+            layers = <0>;
+            brightness = <0>;
+        };
+
         layer1_led {
             leds = <&blue_led>;
             layers = <1>;
@@ -74,7 +80,7 @@
         Arduino {
             display-name = "Arduino";
             bindings = <
-                &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
+                &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &bl BL_TOG
                 &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
                 &bt BT_CLR      &bt BT_NXT      &sys_reset      &tog 0
             >;
