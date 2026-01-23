@@ -49,7 +49,7 @@ ZMK_SUBSCRIPTION(key_listener, zmk_keycode_state_changed);
 int stryke_display_init(struct stryke_display_widget *widget, lv_obj_t *parent) {
     // Standard ZMK container styling
     widget->obj = lv_obj_create(parent);
-    lv_obj_set_size(widget->obj, 128, 32);
+    lv_obj_set_size(widget->obj, 128, 64);
     lv_obj_set_style_border_width(widget->obj, 0, 0);
     lv_obj_set_style_pad_all(widget->obj, 0, 0);
     lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_SCROLLABLE);
