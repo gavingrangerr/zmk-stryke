@@ -3,6 +3,7 @@ if SHIELD_NUMPAD
 config ZMK_KEYBOARD_NAME
     default "stryke"
 
+# These drivers are required for the pulsing LED effect
 config PWM
     default y
 
