@@ -9,8 +9,4 @@ config PWM
 config LED_PWM
     default y
 
-config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
-    bool
-    default y
-
 endif
