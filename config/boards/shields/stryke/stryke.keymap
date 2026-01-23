@@ -3,6 +3,10 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+    chosen {
+        zmk,matrix-transform = &default_transform;
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
