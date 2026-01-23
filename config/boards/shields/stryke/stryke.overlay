@@ -45,7 +45,7 @@
     };
 };
 
-// I2C configuration for Nice!Nano v2
+// I2C configuration for Nice!Nano v2 - CORRECTED
 &i2c0 {
     compatible = "nordic,nrf-twi";
     status = "okay";
@@ -53,13 +53,13 @@
     sda-pin = <29>;  // P0.29
     scl-pin = <31>;  // P0.31
     
-    oled: sh1106@3c {
-        compatible = "sinowealth,sh1106"; 
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
         reg = <0x3c>;
-        label = "SH1106";
+        label = "SSD1306";
         width = <128>;
         height = <64>;
-        segment-offset = <2>;
+        segment-offset = <0>;
         page-offset = <0>;
         display-offset = <0>;
         multiplex-ratio = <63>;
@@ -67,8 +67,8 @@
         com-invdir;
         com-sequential;
         prechargep = <0x22>;
-        reset-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;    // P0.06 (D9 equivalent)
-        data-cmd-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>; // P0.08 (D8 equivalent)
-        status = "okay";
+        inversion-on;
+        reset-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;    // P0.06
+        data-cmd-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>; // P0.08
     };
 };
