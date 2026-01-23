@@ -1,9 +1,14 @@
 #pragma once
 #include <lvgl.h>
 
+#define CARD_HEIGHT 40
+#define MAX_TEXT_HEIGHT 32
+
 struct stryke_display_widget {
     lv_obj_t *obj;
+    lv_obj_t *key_display;  // Added
     lv_obj_t *key_label;
+    lv_obj_t *layer_indicators[5]; // Added
     lv_obj_t *layer_labels[5];
 };
 
