@@ -1,0 +1,1 @@
+zephyr_library_sources_ifdef(CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM status-screen.c)
