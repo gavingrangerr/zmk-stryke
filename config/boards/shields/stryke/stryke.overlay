@@ -2,7 +2,12 @@
 #include <physical_layouts.dtsi>
 #include <dt-bindings/pinctrl/nrf-pinctrl.h>
 
-/ {  
+/ {
+    chosen {
+        zephyr,display = &oled;
+        zmk,physical-layout = &physical_layout0;
+    };
+
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
