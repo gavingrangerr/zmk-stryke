@@ -3,12 +3,9 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
-    };
-
     keymap {
         compatible = "zmk,keymap";
 
-        /* Layer 0: Base */
         Base {
             display-name = "Base";
             bindings = <
@@ -18,7 +15,6 @@
             >;
         };
 
-        /* Layer 1: KiCad */
         KiCad {
             display-name = "KiCad";
             bindings = <
@@ -28,7 +24,6 @@
             >;
         };
         
-        /* Layer 2: Fusion */
         Fusion {
             display-name = "Fusion";
             bindings = <
@@ -38,7 +33,6 @@
             >;
         };
 
-        /* Layer 3: VS-Code */
         VS_Code {
             display-name = "VS-Code";
             bindings = <
@@ -48,7 +42,6 @@
             >;
         };
 
-        /* Layer 4: Arduino */
         Arduino {
             display-name = "Arduino";
             bindings = <
