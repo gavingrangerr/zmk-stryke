@@ -7,7 +7,6 @@
         zephyr,display = &oled;
         zmk,display = &oled;
     };
-    };
 
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
