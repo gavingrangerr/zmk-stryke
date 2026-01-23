@@ -3,14 +3,12 @@ if SHIELD_STRYKE
 config ZMK_KEYBOARD_NAME
     default "stryke"
 
-# Driver defaults
 config PWM
     default y
 
 config LED_PWM
     default y
 
-# Display tuning (with types defined to prevent warnings)
 if LVGL
 config LV_Z_VDB_SIZE
     int
@@ -24,9 +22,6 @@ config LV_Z_BITS_PER_PIXEL
     int
     default 1
 
-config LV_COLOR_DEPTH_1
-    bool
-    default y
 endif # LVGL
 
 endif # SHIELD_STRYKE
