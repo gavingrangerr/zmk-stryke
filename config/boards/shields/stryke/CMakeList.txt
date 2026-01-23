@@ -1,4 +1,0 @@
-target_sources(app PRIVATE 
-    widgets/stryke_display.c
-    custom_status_screen.c
-)

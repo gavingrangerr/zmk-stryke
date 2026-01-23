@@ -6,6 +6,7 @@
         zmk,matrix-transform = &default_transform;
         zmk,display = &oled;
         zephyr,display = &oled;
+        zmk,status-display = &display_status_screen;
     };
 
     default_kscan: kscan {
@@ -37,14 +38,25 @@
             RC(2,0) RC(2,1) RC(2,2) RC(2,3)
         >;
     };
+    
+    // Custom status screen definition
+    display_status_screen: status_screen {
+        compatible = "zmk,display-status-screen";
+    };
 };
 
-&pro_micro_i2c {
+// I2C configuration for Nice!Nano v2
+&i2c0 {
+    compatible = "nordic,nrf-twi";
     status = "okay";
-
-    oled: ssd1306@3c {
+    clock-frequency = <I2C_BITRATE_FAST>;
+    sda-pin = <29>;  // P0.29
+    scl-pin = <31>;  // P0.31
+    
+    oled: sh1106@3c {
         compatible = "sinowealth,sh1106"; 
         reg = <0x3c>;
+        label = "SH1106";
         width = <128>;
         height = <64>;
         segment-offset = <2>;
@@ -55,5 +67,8 @@
         com-invdir;
         com-sequential;
         prechargep = <0x22>;
+        reset-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;    // P0.06 (D9 equivalent)
+        data-cmd-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>; // P0.08 (D8 equivalent)
+        status = "okay";
     };
 };
