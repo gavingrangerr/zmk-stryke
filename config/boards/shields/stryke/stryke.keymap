@@ -3,11 +3,6 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
-    /* * Critical for ZMK Studio: This links the keymap layers 
-     * to the physical layout defined in your overlay. 
-     */
-    chosen {
-        zmk,physical-layout = &physical_layout0;
     };
 
     keymap {
