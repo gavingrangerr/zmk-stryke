@@ -1,13 +1,7 @@
 if SHIELD_STRYKE
 
 config ZMK_KEYBOARD_NAME
-    default "stryke"
-
-config PWM
-    default y
-
-config LED_PWM
-    default y
+    default "NexusPro"
 
 if LVGL
 config LV_Z_VDB_SIZE
@@ -22,6 +16,9 @@ config LV_Z_BITS_PER_PIXEL
     int
     default 1
 
+config LV_COLOR_DEPTH_1
+    bool
+    default y
 endif # LVGL
 
 endif # SHIELD_STRYKE
