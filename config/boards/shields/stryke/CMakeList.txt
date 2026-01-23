@@ -1,0 +1,4 @@
+# Add this to the existing file
+if (CONFIG_ZMK_DISPLAY)
+    target_sources(app PRIVATE src/StatusScreen.c)
+endif()
