@@ -1,22 +1,26 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 
-/ {  
+/ {
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
-        diode-direction = "col2row"; 
+        diode-direction = "col2row";
         poll-period-ms = <10>;
 
-        row-gpios = <&gpio1 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, 
-                    <&gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, 
-                    <&gpio1 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+        row-gpios = <
+            &gpio1 0  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)
+            &gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)
+            &gpio1 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)
+        >;
 
-        col-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>, 
-                    <&gpio0 20 GPIO_ACTIVE_HIGH>, 
-                    <&gpio0 22 GPIO_ACTIVE_HIGH>, 
-                    <&gpio0 24 GPIO_ACTIVE_HIGH>;
+        col-gpios = <
+            &gpio0 17 GPIO_ACTIVE_HIGH
+            &gpio0 20 GPIO_ACTIVE_HIGH
+            &gpio0 22 GPIO_ACTIVE_HIGH
+            &gpio0 24 GPIO_ACTIVE_HIGH
+        >;
     };
-    
+
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         rows = <3>;
@@ -33,19 +37,45 @@
         display-name = "NexusPro";
         transform = <&default_transform>;
         kscan = <&default_kscan>;
-        keys 
-            = <&key_physical_attrs 100 100     0    0       0     0     0>
-            , <&key_physical_attrs 100 100   100    0       0     0     0>
-            , <&key_physical_attrs 100 100   200    0       0     0     0>
-            , <&key_physical_attrs 100 100   300    0       0     0     0>
-            , <&key_physical_attrs 100 100     0   100      0     0     0>
-            , <&key_physical_attrs 100 100   100   100      0     0     0>
-            , <&key_physical_attrs 100 100   200   100      0     0     0>
-            , <&key_physical_attrs 100 100   300   100      0     0     0>
-            , <&key_physical_attrs 100 100     0   200      0     0     0>
-            , <&key_physical_attrs 100 100   100   200      0     0     0>
-            , <&key_physical_attrs 100 100   200   200      0     0     0>
-            , <&key_physical_attrs 100 100   300   200      0     0     0>
-            ;
+
+        keys =
+            <&key_physical_attrs 100 100   0   0   0 0 0>,
+            <&key_physical_attrs 100 100 100   0   0 0 0>,
+            <&key_physical_attrs 100 100 200   0   0 0 0>,
+            <&key_physical_attrs 100 100 300   0   0 0 0>,
+
+            <&key_physical_attrs 100 100   0 100  0 0 0>,
+            <&key_physical_attrs 100 100 100 100  0 0 0>,
+            <&key_physical_attrs 100 100 200 100  0 0 0>,
+            <&key_physical_attrs 100 100 300 100  0 0 0>,
+
+            <&key_physical_attrs 100 100   0 200  0 0 0>,
+            <&key_physical_attrs 100 100 100 200  0 0 0>,
+            <&key_physical_attrs 100 100 200 200  0 0 0>,
+            <&key_physical_attrs 100 100 300 200  0 0 0>;
+    };
+
+    chosen {
+        zmk,display = &oled;
+    };
+};
+
+&i2c0 {
+    status = "okay";
+    sda-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+    scl-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
+        reg = <0x3c>;
+        label = "SSD1306";
+        width = <128>;
+        height = <64>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <63>;
+        com-invdir;
+        prechargep = <0x22>;
     };
 };
