@@ -1,5 +1,4 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-#include <dt-bindings/zmk/display.h>
 
 / {
     chosen {
@@ -38,33 +37,29 @@
             RC(2,0) RC(2,1) RC(2,2) RC(2,3)
         >;
     };
+};
 
-    // Explicitly define the I2C bus
-    i2c0: &i2c0 {
-        compatible = "nordic,nrf-twim";
-        status = "okay";
-        
-        pinctrl-0 = <&i2c0_default>;
-        pinctrl-1 = <&i2c0_sleep>;
-        pinctrl-names = "default", "sleep";
-        
-        // SSD1306 display
-        oled: ssd1306@3c {
-            compatible = "solomon,ssd1306fb";
-            reg = <0x3c>;
-            label = "SSD1306";
-            width = <128>;
-            height = <64>;
-            segment-offset = <0>;
-            page-offset = <0>;
-            display-offset = <0>;
-            multiplex-ratio = <63>;
-            segment-remap;
-            com-invdir;
-            prechargep = <0x22>;
-            com-sequential;
-            inversion-on;
-        };
+&i2c0 {
+    status = "okay";
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
+        reg = <0x3c>;
+        label = "SSD1306";
+        width = <128>;
+        height = <64>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <63>;
+        segment-remap;
+        com-invdir;
+        prechargep = <0x22>;
+        com-sequential;
+        inversion-on;
     };
 };
 
