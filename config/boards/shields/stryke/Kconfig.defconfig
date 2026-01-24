@@ -26,9 +26,6 @@ config LV_Z_BITS_PER_PIXEL
     range 1 1
     default 1
 
-config LV_COLOR_DEPTH_1
-    bool
-    default y
 
 endif # LVGL
 
