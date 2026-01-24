@@ -20,7 +20,7 @@ config LV_Z_DPI
 
 config LV_Z_BITS_PER_PIXEL
     int
-    default 1
+    default 4
 
 endif # LVGL
 
