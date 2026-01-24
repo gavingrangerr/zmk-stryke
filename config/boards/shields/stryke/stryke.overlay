@@ -5,6 +5,7 @@
 / {
     chosen {
         zmk,display = &oled;
+        zephyr,display = &oled; /* Required by the Zephyr driver */
         zmk,physical-layout = &physical_layout0;
     };
 
@@ -90,6 +91,9 @@
         page-offset = <0>;
         display-offset = <0>;
         multiplex-ratio = <63>;
+        segment-remap;
+        com-invdir;
+        com-sequential;
         prechargep = <0x22>;
     };
 };
