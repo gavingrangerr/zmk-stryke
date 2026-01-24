@@ -9,7 +9,3 @@ include:
     artifact-name: stryke_debug_logging
   - board: nice_nano_v2
     shield: settings_reset
-
-modules:
-  - remote: haerttrich/zmk-nice-oled
-    revision: main
