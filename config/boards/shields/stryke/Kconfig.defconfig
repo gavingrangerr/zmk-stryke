@@ -9,20 +9,6 @@ config PWM
 config LED_PWM
     default y
 
-config ZMK_DISPLAY
-    select SSD1306
-    select I2C
-
-config I2C
-    default y
-
-config SSD1306
-    default y
-    select I2C
-
-config SSD1306_REVERSE_MODE
-    default y
-
 if LVGL
 config LV_Z_VDB_SIZE
     int
