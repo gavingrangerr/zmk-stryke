@@ -1,55 +1,304 @@
-#include <behaviors.dtsi>
-#include <dt-bindings/zmk/keys.h>
-#include <dt-bindings/zmk/bt.h>
+// display.c - Custom OLED display for 128x64
+#include <zmk/display.h>
+#include <zmk/events/layer_state_changed.h>
+#include <zmk/events/keycode_state_changed.h>
+#include <zmk/keymap.h>
+#include <zmk/events/modifiers_state_changed.h>
+#include <zmk/endpoints.h>
+#include <zmk/battery.h>
+#include <lvgl.h>
+#include <stdio.h>
 
-/ {
-    keymap {
-        compatible = "zmk,keymap";
-        transform = <&default_transform>;
+static char last_key_str[32] = "None";
+static char modifier_str[32] = "";
+static uint8_t current_layer = 0;
+static int battery_percentage = 100;
+static char output_str[16] = "USB";
 
-        Base {
-            display-name = "Base";
-            bindings = <
-                &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
-                &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(N3))  &kp LG(LS(N4))  &bootloader     &tog 1
-            >;
-        };
+// Layer names array matching your keymap
+static const char *layer_names[] = {
+    "BASE",     // Layer 0
+    "KICAD",    // Layer 1  
+    "FUSION",   // Layer 2
+    "VS-CODE",  // Layer 3
+    "ARDUINO",  // Layer 4
+};
 
-        KiCad {
-            display-name = "KiCad";
-            bindings = <
-                &kp R           &kp M           &kp G           &kp DEL
-                &kp V           &kp E           &kp X           &kp W
-                &kp B           &kp F           &kp H           &tog 2
-            >;
+// Custom widget structure
+struct custom_widget_status {
+    sys_snode_t node;
+    lv_obj_t *canvas;
+    lv_obj_t *layer_label;
+    lv_obj_t *key_label;
+    lv_obj_t *mod_label;
+    lv_obj_t *battery_label;
+    lv_obj_t *output_label;
+    lv_obj_t *separator;
+    bool active;
+};
+
+static struct custom_widget_status custom_widget;
+
+// Convert keycode to readable string
+static void keycode_to_str(uint16_t keycode, char *buf, size_t buf_len) {
+    // Handle layer toggles
+    switch (keycode) {
+        case TO(0): strncpy(buf, "TO-BASE", buf_len); return;
+        case TO(1): strncpy(buf, "TO-KICAD", buf_len); return;
+        case TO(2): strncpy(buf, "TO-FUSION", buf_len); return;
+        case TO(3): strncpy(buf, "TO-VSCODE", buf_len); return;
+        case TO(4): strncpy(buf, "TO-ARDUINO", buf_len); return;
+        case bootloader: strncpy(buf, "BOOT", buf_len); return;
+        case sys_reset: strncpy(buf, "RESET", buf_len); return;
+        case BT_CLR: strncpy(buf, "BT-CLR", buf_len); return;
+        case BT_NXT: strncpy(buf, "BT-NXT", buf_len); return;
+    }
+    
+    // Handle your specific shortcuts
+    if (keycode >= LG(C) && keycode <= LG(Z)) {
+        // Map common shortcuts
+        const char *shortcuts[] = {
+            "LG-C", "LG-V", "LG-X", "LG-Z", "LG-A", "LG-S", "LG-F", 
+            "LG-LS(Z)", "LG-LS(3)", "LG-LS(4)", "R", "M", "G", "DEL",
+            "V", "E", "X", "W", "B", "F", "H", "LG-K", "R", "L", "D",
+            "E", "Q", "F", "LG-Z", "LG-1", "LG-2", "LG-0", "LG-P",
+            "LS-LG-P", "LG-B", "LG-/", "LG-D", "LS-LG-L", "LG-F",
+            "LG-Z", "LG-'", "LS-LG-F", "LS-LG-E", "LG-R", "LG-U",
+            "LS-LG-M", "LG-K", "LG-T", "LG-Z", "LG-L", "LG-S"
         };
         
-        Fusion {
-            display-name = "Fusion";
-            bindings = <
-                &kp LG(K)       &kp R           &kp L           &kp D
-                &kp E           &kp Q           &kp F           &kp LG(Z)
-                &kp LG(N1)      &kp LG(N2)      &kp LG(N0)      &tog 3
-            >;
-        };
+        // This is a simplified mapping - adjust based on your actual key positions
+        if (keycode - LG(C) < sizeof(shortcuts)/sizeof(shortcuts[0])) {
+            strncpy(buf, shortcuts[keycode - LG(C)], buf_len);
+            return;
+        }
+    }
+    
+    // Fallback for other keys
+    if (keycode >= KC_A && keycode <= KC_Z) {
+        snprintf(buf, buf_len, "%c", 'A' + (keycode - KC_A));
+    } else if (keycode >= KC_1 && keycode <= KC_0) {
+        snprintf(buf, buf_len, "%d", keycode - KC_1 + 1);
+    } else {
+        snprintf(buf, buf_len, "Key:%d", keycode);
+    }
+}
 
-        VS_Code {
-            display-name = "VS-Code";
-            bindings = <
-                &kp LG(P)       &kp LS(LG(P))   &kp LG(B)       &kp LG(FSLH)
-                &kp LG(D)       &kp LS(LG(L))   &kp LG(F)       &kp LG(Z)
-                &kp LG(SQT)     &kp LS(LG(F))   &kp LS(LG(E))   &tog 4
-            >;
-        };
+// Update modifier string
+static void update_modifiers(void) {
+    zmk_mod_flags_t modifiers = zmk_hid_get_explicit_mods();
+    
+    modifier_str[0] = '\0';
+    char temp[32] = "";
+    
+    if (modifiers & MOD_LSFT) strcat(modifier_str, "LSHIFT ");
+    if (modifiers & MOD_RSFT) strcat(modifier_str, "RSHIFT ");
+    if (modifiers & MOD_LCTL) strcat(modifier_str, "LCTRL ");
+    if (modifiers & MOD_RCTL) strcat(modifier_str, "RCTRL ");
+    if (modifiers & MOD_LALT) strcat(modifier_str, "LALT ");
+    if (modifiers & MOD_RALT) strcat(modifier_str, "RALT ");
+    if (modifiers & MOD_LGUI) strcat(modifier_str, "LGUI ");
+    if (modifiers & MOD_RGUI) strcat(modifier_str, "RGUI ");
+    
+    // Trim trailing space
+    if (modifier_str[0] != '\0') {
+        modifier_str[strlen(modifier_str)-1] = '\0';
+    }
+}
 
-        Arduino {
-            display-name = "Arduino";
-            bindings = <
-                &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
-                &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
-                &bt BT_CLR      &bt BT_NXT      &sys_reset      &tog 0
-            >;
-        };
-    };
-};
+// Update output status
+static void update_output_status(void) {
+    switch (zmk_endpoints_selected()) {
+        case ZMK_ENDPOINT_USB:
+            strcpy(output_str, "USB");
+            break;
+        case ZMK_ENDPOINT_BLE:
+            strcpy(output_str, "BLE");
+            break;
+        default:
+            strcpy(output_str, "---");
+            break;
+    }
+}
+
+// Handle key press events
+int custom_keycode_listener(const zmk_event_t *eh) {
+    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
+    
+    if (ev != NULL && ev->state) { // Only on key press
+        keycode_to_str(ev->keycode, last_key_str, sizeof(last_key_str));
+        update_modifiers();
+        
+        // Update display
+        if (custom_widget.active) {
+            if (custom_widget.key_label) {
+                lv_label_set_text_fmt(custom_widget.key_label, "Key: %s", last_key_str);
+            }
+            if (custom_widget.mod_label && modifier_str[0] != '\0') {
+                lv_label_set_text_fmt(custom_widget.mod_label, "Mod: %s", modifier_str);
+            }
+        }
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+// Handle layer change events  
+int custom_layer_listener(const zmk_event_t *eh) {
+    const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
+    
+    if (ev != NULL) {
+        current_layer = zmk_keymap_highest_layer_active();
+        
+        // Update display
+        if (custom_widget.active && custom_widget.layer_label) {
+            const char *layer_name = (current_layer < sizeof(layer_names)/sizeof(layer_names[0])) 
+                ? layer_names[current_layer] 
+                : "UNKNOWN";
+            lv_label_set_text_fmt(custom_widget.layer_label, "Layer: %s", layer_name);
+        }
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+// Handle modifier changes
+int custom_modifiers_listener(const zmk_event_t *eh) {
+    update_modifiers();
+    
+    if (custom_widget.active && custom_widget.mod_label) {
+        if (modifier_str[0] != '\0') {
+            lv_label_set_text_fmt(custom_widget.mod_label, "Mod: %s", modifier_str);
+        } else {
+            lv_label_set_text(custom_widget.mod_label, "Mod: None");
+        }
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+// Handle battery updates
+int custom_battery_listener(const zmk_event_t *eh) {
+    battery_percentage = zmk_battery_state_of_charge_remaining();
+    
+    if (custom_widget.active && custom_widget.battery_label) {
+        lv_label_set_text_fmt(custom_widget.battery_label, "BAT: %d%%", battery_percentage);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+// Handle output changes
+int custom_output_listener(const zmk_event_t *eh) {
+    update_output_status();
+    
+    if (custom_widget.active && custom_widget.output_label) {
+        lv_label_set_text_fmt(custom_widget.output_label, "Out: %s", output_str);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+// Initialize the custom widget for 128x64
+static lv_obj_t *zmk_display_custom_widget() {
+    lv_obj_t *canvas = lv_obj_create(lv_scr_act(), NULL);
+    lv_obj_set_size(canvas, 128, 64);
+    lv_obj_align(canvas, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    
+    // Set background to black
+    lv_obj_set_style_bg_color(canvas, lv_color_black(), 0);
+    
+    // Layer label (line 1)
+    lv_obj_t *layer_label = lv_label_create(canvas, NULL);
+    const char *layer_name = (current_layer < sizeof(layer_names)/sizeof(layer_names[0])) 
+        ? layer_names[current_layer] 
+        : "UNKNOWN";
+    lv_label_set_text_fmt(layer_label, "Layer: %s", layer_name);
+    lv_obj_set_style_text_font(layer_label, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(layer_label, lv_color_white(), 0);
+    lv_obj_align(layer_label, NULL, LV_ALIGN_IN_TOP_LEFT, 2, 2);
+    
+    // Key label (line 2)
+    lv_obj_t *key_label = lv_label_create(canvas, NULL);
+    lv_label_set_text_fmt(key_label, "Key: %s", last_key_str);
+    lv_obj_set_style_text_font(key_label, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(key_label, lv_color_white(), 0);
+    lv_obj_align(key_label, NULL, LV_ALIGN_IN_TOP_LEFT, 2, 20);
+    
+    // Modifier label (line 3)
+    lv_obj_t *mod_label = lv_label_create(canvas, NULL);
+    lv_label_set_text_fmt(mod_label, "Mod: %s", modifier_str);
+    lv_obj_set_style_text_font(mod_label, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(mod_label, lv_color_white(), 0);
+    lv_obj_align(mod_label, NULL, LV_ALIGN_IN_TOP_LEFT, 2, 36);
+    
+    // Horizontal separator line
+    lv_obj_t *separator = lv_line_create(canvas, NULL);
+    static lv_point_t line_points[] = {{0, 48}, {128, 48}};
+    lv_line_set_points(separator, line_points, 2);
+    lv_obj_set_style_line_width(separator, 1, 0);
+    lv_obj_set_style_line_color(separator, lv_color_white(), 0);
+    
+    // Status area (bottom section)
+    // Battery label (bottom left)
+    lv_obj_t *battery_label = lv_label_create(canvas, NULL);
+    lv_label_set_text_fmt(battery_label, "BAT: %d%%", battery_percentage);
+    lv_obj_set_style_text_font(battery_label, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(battery_label, lv_color_white(), 0);
+    lv_obj_align(battery_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 2, -2);
+    
+    // Output label (bottom right)
+    lv_obj_t *output_label = lv_label_create(canvas, NULL);
+    lv_label_set_text_fmt(output_label, "Out: %s", output_str);
+    lv_obj_set_style_text_font(output_label, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(output_label, lv_color_white(), 0);
+    lv_obj_align(output_label, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -2, -2);
+    
+    custom_widget.canvas = canvas;
+    custom_widget.layer_label = layer_label;
+    custom_widget.key_label = key_label;
+    custom_widget.mod_label = mod_label;
+    custom_widget.battery_label = battery_label;
+    custom_widget.output_label = output_label;
+    custom_widget.separator = separator;
+    custom_widget.active = true;
+    
+    return canvas;
+}
+
+// Register the widget
+ZMK_DISPLAY_WIDGET_LISTENER(custom_widget_status, struct zmk_widget_status,
+    custom_widget, zmk_display_custom_widget,
+    {
+        // Update all fields on any status change
+        if (custom_widget.layer_label) {
+            const char *layer_name = (current_layer < sizeof(layer_names)/sizeof(layer_names[0])) 
+                ? layer_names[current_layer] 
+                : "UNKNOWN";
+            lv_label_set_text_fmt(custom_widget.layer_label, "Layer: %s", layer_name);
+        }
+        if (custom_widget.key_label) {
+            lv_label_set_text_fmt(custom_widget.key_label, "Key: %s", last_key_str);
+        }
+        if (custom_widget.mod_label) {
+            lv_label_set_text_fmt(custom_widget.mod_label, "Mod: %s", modifier_str);
+        }
+        if (custom_widget.battery_label) {
+            lv_label_set_text_fmt(custom_widget.battery_label, "BAT: %d%%", battery_percentage);
+        }
+        if (custom_widget.output_label) {
+            lv_label_set_text_fmt(custom_widget.output_label, "Out: %s", output_str);
+        }
+    }
+)
+
+// Register all listeners
+ZMK_LISTENER(custom_keycode_listener, custom_keycode_listener);
+ZMK_SUBSCRIPTION(custom_keycode_listener, zmk_keycode_state_changed);
+
+ZMK_LISTENER(custom_layer_listener, custom_layer_listener);
+ZMK_SUBSCRIPTION(custom_layer_listener, zmk_layer_state_changed);
+
+ZMK_LISTENER(custom_modifiers_listener, custom_modifiers_listener);
+ZMK_SUBSCRIPTION(custom_modifiers_listener, zmk_modifiers_state_changed);
+
+ZMK_LISTENER(custom_battery_listener, custom_battery_listener);
+ZMK_SUBSCRIPTION(custom_battery_listener, zmk_battery_state_changed);
+
+ZMK_LISTENER(custom_output_listener, custom_output_listener);
+ZMK_SUBSCRIPTION(custom_output_listener, zmk_endpoint_changed);
