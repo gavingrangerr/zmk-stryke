@@ -2,7 +2,7 @@
 #include <zmk/events/keycode_state_changed.h>
 #include <zmk/events/layer_state_changed.h>
 #include <lvgl.h>
-#include "custom_status_screen.h"
+#include "status.h"
 
 static lv_obj_t *key_label;
 static lv_obj_t *layer_label;
