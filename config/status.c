@@ -49,12 +49,12 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen = lv_obj_create(NULL);
 
     key_label = lv_label_create(screen);
-    lv_obj_set_style_text_font(key_label, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_font(key_label, &lv_font_unscii_16, 0);
     lv_label_set_text(key_label, "GO");
     lv_obj_align(key_label, LV_ALIGN_CENTER, 0, -10);
 
     layer_label = lv_label_create(screen);
-    lv_obj_set_style_text_font(layer_label, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_font(layer_label, &lv_font_unscii_8, 0);
     lv_label_set_text(layer_label, "LYR: 0");
     lv_obj_align(layer_label, LV_ALIGN_BOTTOM_MID, 0, -5);
 

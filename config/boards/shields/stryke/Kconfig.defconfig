@@ -9,9 +9,12 @@ config PWM
 config LED_PWM
     default y
 
+
 if LVGL
+
 config LV_Z_VDB_SIZE
     int
+    range 1 100
     default 64
 
 config LV_Z_DPI
@@ -20,7 +23,12 @@ config LV_Z_DPI
 
 config LV_Z_BITS_PER_PIXEL
     int
+    range 1 1
     default 1
+
+config LV_COLOR_DEPTH_1
+    bool
+    default y
 
 endif # LVGL
 
