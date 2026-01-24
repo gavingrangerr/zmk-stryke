@@ -5,7 +5,6 @@
 / {
     keymap {
         compatible = "zmk,keymap";
-        transform = <&default_transform>;
 
         Base {
             display-name = "Base";

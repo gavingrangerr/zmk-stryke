@@ -1,14 +1,7 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
-#include <dt-bindings/pinctrl/nrf-pinctrl.h>
 
-/ {
-    chosen {
-        zmk,display = &oled;
-        zephyr,display = &oled; /* Required by the Zephyr driver */
-        zmk,physical-layout = &physical_layout0;
-    };
-
+/ {  
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
@@ -54,43 +47,5 @@
             , <&key_physical_attrs 100 100   200   200      0     0     0>
             , <&key_physical_attrs 100 100   300   200      0     0     0>
             ;
-    };
-};
-
-&pinctrl {
-    i2c0_default: i2c0_default {
-        group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 29)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 31)>;
-            bias-pull-up;
-        };
-    };
-
-    i2c0_sleep: i2c0_sleep {
-        group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 29)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 31)>;
-            bias-pull-up;
-            low-power-enable;
-        };
-    };
-};
-
-&i2c0 {
-    status = "okay";
-
-    ssd1306@3c {
-        compatible = "solomon,ssd1306fb-i2c";
-        reg = <0x3c>;
-
-        width = <128>;
-        height = <64>;
-
-        segment-offset = <0>;
-        page-offset = <0>;
-        display-offset = <0>;
-        multiplex-ratio = <63>;
-        com-invdir;
-        prechargep = <2>;
     };
 };

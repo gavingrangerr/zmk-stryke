@@ -1,32 +1,13 @@
-if SHIELD_STRYKE
+if SHIELD_NUMPAD
 
 config ZMK_KEYBOARD_NAME
     default "stryke"
 
+# These drivers are required for the pulsing LED effect
 config PWM
     default y
 
 config LED_PWM
     default y
 
-
-if LVGL
-
-config LV_Z_VDB_SIZE
-    int
-    range 1 100
-    default 64
-
-config LV_Z_DPI
-    int
-    default 148
-
-config LV_Z_BITS_PER_PIXEL
-    int
-    range 1 1
-    default 1
-
-
-endif # LVGL
-
-endif # SHIELD_STRYKE
+endif
