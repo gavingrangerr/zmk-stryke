@@ -15,7 +15,7 @@ lv_obj_t *zmk_display_status_screen(void) {
         boot_time = k_uptime_get();
     }
     if (k_uptime_get() - boot_time < 5000) {
-        return NULL;   // ZMK shows nothing yet
+        return NULL; 
     }
 
     if (screen != NULL) {
