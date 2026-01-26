@@ -53,7 +53,7 @@
 &pinctrl {
     i2c0_default: i2c0_default {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 31>,
+            psels = <NRF_PSEL(TWIM_SDA, 0, 31)>, 
                     <NRF_PSEL(TWIM_SCL, 0, 29)>;
         };
     };
@@ -72,7 +72,7 @@
     pinctrl-0 = <&i2c0_default>;
     pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
-    clock-frequency = <I2C_BITRATE_STANDARD>;
+    clock-frequency = <100000>; 
 
     oled: ssd1306@3c {
         compatible = "solomon,ssd1306fb";
@@ -85,15 +85,15 @@
         multiplex-ratio = <63>;
         segment-remap;
         com-invdir;
+        com-sequential;
         prechargep = <0x22>;
-        com-sequential; 
-        inversion-on;
+        inversion-on; 
     };
 };
 
 / {
     chosen {
-        zmk,display = &oled;
         zephyr,display = &oled;
+        zmk,display = &oled;
     };
 };
