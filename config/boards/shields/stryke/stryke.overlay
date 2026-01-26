@@ -97,7 +97,5 @@
         com-invdir;
         com-sequential;
         prechargep = <0x22>;
-        contrast = <0x7F>;
-        vcomh = <0x35>;
     };
 };
