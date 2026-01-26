@@ -97,7 +97,6 @@
         multiplex-ratio = <63>;
         segment-remap;
         com-invdir;
-        com-alternative; 
         prechargep = <0x22>;
     };
 };
