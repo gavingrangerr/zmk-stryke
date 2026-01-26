@@ -56,6 +56,7 @@
             psels = <NRF_PSEL(TWIM_SDA, 0, 31)>,
                     <NRF_PSEL(TWIM_SCL, 0, 29)>;
             bias-pull-up;
+            drive-open-drain;
         };
     };
 
@@ -70,9 +71,11 @@
 
 &i2c0 {
     status = "okay";
+    compatible = "nordic,nrf-twim";
     pinctrl-0 = <&i2c0_default>;
     pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
+    clock-frequency = <I2C_BITRATE_STANDARD>;
 
     oled: ssd1306@3c {
         compatible = "solomon,ssd1306fb";
@@ -86,7 +89,6 @@
         segment-remap;
         com-invdir;
         com-sequential;
-        inversion-on;
         prechargep = <0x22>;
     };
 };
@@ -94,6 +96,5 @@
 / {
     chosen {
         zephyr,display = &oled;
-        zmk,display=&oled;
     };
 };
