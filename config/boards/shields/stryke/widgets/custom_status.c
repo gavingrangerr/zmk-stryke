@@ -44,7 +44,7 @@ lv_obj_t *zmk_display_status_screen(void) {
     // 6. Normal UI: Center Title
     lv_obj_t *title_label = lv_label_create(screen);
     lv_label_set_text(title_label, "STRYKE");
-    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_12, LV_PART_MAIN);
     lv_obj_align(title_label, LV_ALIGN_CENTER, 0, 0);
 
     // 7. Normal UI: Bottom label
