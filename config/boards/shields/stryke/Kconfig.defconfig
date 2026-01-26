@@ -3,15 +3,13 @@ if SHIELD_STRYKE
 config ZMK_DISPLAY
     default y
 
-config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
-    default y
-
 config I2C
     default y
 
 config SSD1306
     default y
 
+# Increase memory for LVGL 128x64 buffer
 config LV_Z_MEM_POOL_SIZE
     default 16384
 
