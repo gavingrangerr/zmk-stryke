@@ -38,7 +38,7 @@
 
     physical_layout0: physical_layout_0 {
         compatible = "zmk,physical-layout";
-        display-name = "Stryke";
+        display-name = "NexusPro";
         transform = <&default_transform>;
         kscan = <&default_kscan>;
         keys 
