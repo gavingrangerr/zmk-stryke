@@ -5,18 +5,26 @@
 #include <lvgl.h>
 
 static lv_obj_t *screen;
+static int64_t boot_time;
 
 static struct zmk_widget_layer_status layer_status_widget;
 static struct zmk_widget_battery_status battery_status_widget;
 
 lv_obj_t *zmk_display_status_screen(void) {
+    if (boot_time == 0) {
+        boot_time = k_uptime_get();
+    }
+    if (k_uptime_get() - boot_time < 5000) {
+        return NULL;   // ZMK shows nothing yet
+    }
+
     if (screen != NULL) {
         return screen;
     }
 
     screen = lv_obj_create(NULL);
 
-    // Black background (good, keep this)
+    // Black background
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
