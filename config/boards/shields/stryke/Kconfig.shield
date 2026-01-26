@@ -1,2 +1,3 @@
 config SHIELD_STRYKE
     def_bool $(shields_list_contains,stryke)
+    select ZMK_DISPLAY
