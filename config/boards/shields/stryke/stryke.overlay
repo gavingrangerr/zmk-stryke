@@ -86,20 +86,17 @@
     pinctrl-names = "default", "sleep";
     clock-frequency = <100000>;
 
-    oled: ssd1306@3c {
-        compatible = "solomon,ssd1306fb";
-        reg = <0x3c>;
-        width = <128>;
+    oled: oled_display@3C {
+        compatible = "solomon,s6d02a1";
+        reg = <0x3C>;
+        label = "OLED Display";
         height = <64>;
-        segment-offset = <2>;
-        page-offset = <0>;
-        display-offset = <0>;
-        multiplex-ratio = <63>;
-        segment-remap;
-        com-invdir;
-        prechargep = <0x22>;
+        width = <128>;
+        rotation = <0>;
+        interface = "i2c";
+        reset-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+        vcc-supply = <&regulator_vcc>;
     };
-};
 
 / {
     chosen {
