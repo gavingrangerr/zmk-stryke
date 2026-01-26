@@ -1,12 +1,7 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 
-/ {
-    chosen {
-        zephyr,display = &oled;
-        zmk,physical-layout = &physical_layout0;
-    };
-
+/ {  
     default_kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row"; 
@@ -53,14 +48,15 @@
             , <&key_physical_attrs 100 100   300   200      0     0     0>
             ;
     };
+};
 
+/ {
     regulator_vcc: regulator_vcc {
         compatible = "regulator-fixed";
+        label = "VCC_EN";
         regulator-name = "VCC_EN";
         enable-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
         regulator-always-on;
-        regulator-boot-on;
-        startup-delay-us = <10000>;
     };
 };
 
@@ -70,7 +66,6 @@
             psels = <NRF_PSEL(TWIM_SDA, 0, 29)>,
                     <NRF_PSEL(TWIM_SCL, 0, 31)>;
             bias-pull-up;
-            nordic,drive-mode = <NRF_DRIVE_D0H1>;
         };
     };
 
@@ -85,10 +80,11 @@
 
 &i2c0 {
     status = "okay";
+    compatible = "nordic,nrf-twim";
     pinctrl-0 = <&i2c0_default>;
     pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
-    clock-frequency = <100000>; 
+    clock-frequency = <100000>;
 
     oled: ssd1306@3c {
         compatible = "solomon,ssd1306fb";
@@ -101,7 +97,12 @@
         multiplex-ratio = <63>;
         segment-remap;
         com-invdir;
-        com-sequential;
         prechargep = <0x22>;
+    };
+};
+
+/ {
+    chosen {
+        zephyr,display = &oled;
     };
 };
