@@ -25,13 +25,15 @@ lv_obj_t *zmk_display_status_screen() {
     // 4. Main Label (Center)
     lv_obj_t *title_label = lv_label_create(screen);
     lv_label_set_text(title_label, "STRYKE");
-    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_16, LV_PART_MAIN);
+    
+    // If you add CONFIG_LV_FONT_MONTSERRAT_16=y to stryke.conf, use this:
+    // lv_obj_set_style_text_font(title_label, &lv_font_montserrat_16, LV_PART_MAIN);
+    
     lv_obj_align(title_label, LV_ALIGN_CENTER, 0, 0);
 
     // 5. System Status (Bottom)
     lv_obj_t *status_label = lv_label_create(screen);
     lv_label_set_text(status_label, "NEXUS PRO");
-    lv_obj_set_style_text_font(status_label, &lv_font_montserrat_10, LV_PART_MAIN);
     lv_obj_align(status_label, LV_ALIGN_BOTTOM_MID, 0, -5);
 
     return screen;
