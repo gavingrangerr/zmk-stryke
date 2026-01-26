@@ -59,6 +59,8 @@
         regulator-name = "VCC_EN";
         enable-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
         regulator-always-on;
+        regulator-boot-on;
+        startup-delay-us = <10000>;
     };
 };
 
@@ -68,7 +70,7 @@
             psels = <NRF_PSEL(TWIM_SDA, 0, 29)>,
                     <NRF_PSEL(TWIM_SCL, 0, 31)>;
             bias-pull-up;
-            nordic,drive-mode = <NRF_DRIVE_H0H1>; 
+            nordic,drive-mode = <NRF_DRIVE_D0H1>;
         };
     };
 
