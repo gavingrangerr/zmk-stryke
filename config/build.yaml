@@ -1,11 +1,11 @@
 include:
-  - board: nice_nano_v2
+  - board: nice_nano
     shield: stryke
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
-  - board: nice_nano_v2
+  - board: nice_nano
     shield: stryke
     snippet: zmk-usb-logging
     artifact-name: stryke_debug_logging
-  - board: nice_nano_v2
+  - board: nice_nano
     shield: settings_reset
