@@ -5,9 +5,6 @@
 #include <zmk/keymap.h>
 #include <zmk/events/keycode_state_changed.h>
 #include <lvgl.h>
-#include <logging/log.h>
-
-LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #ifdef __cplusplus
 extern "C" {
