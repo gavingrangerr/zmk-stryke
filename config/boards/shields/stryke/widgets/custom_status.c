@@ -36,7 +36,59 @@ static bool mod_rshift = false;
 static bool mod_ralt = false;
 static bool mod_rgui = false;
 
-static const char* get_key_name(uint32_t keycode) {
+static const char* get_key_name(uint32_t keycode, bool shift) {
+    if (shift) {
+        switch(keycode) {
+            case 0x1E: return "!";
+            case 0x1F: return "@";
+            case 0x20: return "#";
+            case 0x21: return "$";
+            case 0x22: return "%";
+            case 0x23: return "^";
+            case 0x24: return "&";
+            case 0x25: return "*";
+            case 0x26: return "(";
+            case 0x27: return ")";
+            case 0x2D: return "_";
+            case 0x2E: return "+";
+            case 0x2F: return "{";
+            case 0x30: return "}";
+            case 0x31: return "|";
+            case 0x33: return ":";
+            case 0x34: return "\"";
+            case 0x35: return "~";
+            case 0x36: return "<";
+            case 0x37: return ">";
+            case 0x38: return "?";
+            case 0x04: return "A";
+            case 0x05: return "B";
+            case 0x06: return "C";
+            case 0x07: return "D";
+            case 0x08: return "E";
+            case 0x09: return "F";
+            case 0x0A: return "G";
+            case 0x0B: return "H";
+            case 0x0C: return "I";
+            case 0x0D: return "J";
+            case 0x0E: return "K";
+            case 0x0F: return "L";
+            case 0x10: return "M";
+            case 0x11: return "N";
+            case 0x12: return "O";
+            case 0x13: return "P";
+            case 0x14: return "Q";
+            case 0x15: return "R";
+            case 0x16: return "S";
+            case 0x17: return "T";
+            case 0x18: return "U";
+            case 0x19: return "V";
+            case 0x1A: return "W";
+            case 0x1B: return "X";
+            case 0x1C: return "Y";
+            case 0x1D: return "Z";
+        }
+    }
+    
     switch(keycode) {
         case 0x04: return "A";
         case 0x05: return "B";
@@ -191,21 +243,22 @@ static void display_work_handler(struct k_work *work) {
     
     last_key_text[0] = '\0';
     
-    // Check modifier state at display time
-    if (mod_lgui || mod_rgui) {
+    bool shift = mod_lshift || mod_rshift;
+    bool ctrl = mod_lctrl || mod_rctrl;
+    bool alt = mod_lalt || mod_ralt;
+    bool gui = mod_lgui || mod_rgui;
+    
+    if (gui) {
         strcat(last_key_text, "CMD+");
     }
-    if (mod_lshift || mod_rshift) {
-        strcat(last_key_text, "SFT+");
-    }
-    if (mod_lctrl || mod_rctrl) {
+    if (ctrl) {
         strcat(last_key_text, "CTL+");
     }
-    if (mod_lalt || mod_ralt) {
+    if (alt) {
         strcat(last_key_text, "ALT+");
     }
     
-    const char* key_name = get_key_name(pending_keycode);
+    const char* key_name = get_key_name(pending_keycode, shift);
     if (key_name != NULL) {
         strcat(last_key_text, key_name);
     } else {
@@ -293,7 +346,6 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     uint8_t keycode = ev->keycode;
     bool pressed = ev->state;
     
-    // Track modifier keys
     switch(keycode) {
         case 0xE0: mod_lctrl = pressed; return 0;
         case 0xE1: mod_lshift = pressed; return 0;
@@ -305,10 +357,9 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
         case 0xE7: mod_rgui = pressed; return 0;
     }
     
-    // Schedule display update with 10ms delay to ensure modifiers are registered
     if (pressed && keycode >= 0x04 && keycode <= 0x52) {
         pending_keycode = keycode;
-        k_work_schedule(&display_work, K_MSEC(10));
+        k_work_schedule(&display_work, K_MSEC(20));
     }
     
     return 0;
