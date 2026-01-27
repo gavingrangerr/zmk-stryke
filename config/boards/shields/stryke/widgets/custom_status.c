@@ -73,23 +73,3 @@ lv_obj_t *zmk_display_status_screen(void) {
 #ifdef __cplusplus
 }
 #endif
-```
-
-## Key Changes:
-
-1. **Added `lv_refr_now(NULL)`** - Forces an immediate LVGL display refresh
-2. **Added white text color** - Your labels might be rendering as black-on-black
-3. **Pass `screen` as parameter** - More explicit about which object we're modifying
-
-## Alternative: If the above doesn't work
-
-The display might be going to sleep. Try adding this to your `.conf` file:
-```
-CONFIG_ZMK_DISPLAY_WORK_QUEUE_DEDICATED=y
-CONFIG_ZMK_IDLE_TIMEOUT=300000
-```
-
-Or if you want to force the display to stay on:
-```
-CONFIG_ZMK_DISPLAY=y
-CONFIG_ZMK_IDLE_TIMEOUT=0
