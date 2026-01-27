@@ -1,10 +1,8 @@
 #include <zephyr/kernel.h>
 #include <zmk/display/status_screen.h>
 #include <zmk/events/layer_state_changed.h>
-#include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
-#include <zmk/event_manager.h>
 #include <zmk/events/keycode_state_changed.h>
 #include <lvgl.h>
 
@@ -26,7 +24,15 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
-static uint8_t modifiers = 0;
+// Track modifiers explicitly
+static bool mod_lctrl = false;
+static bool mod_lshift = false;
+static bool mod_lalt = false;
+static bool mod_lgui = false;
+static bool mod_rctrl = false;
+static bool mod_rshift = false;
+static bool mod_ralt = false;
+static bool mod_rgui = false;
 
 static const char* get_key_name(uint32_t keycode) {
     switch(keycode) {
@@ -106,32 +112,6 @@ static const char* get_key_name(uint32_t keycode) {
         case 0x51: return "DN";
         case 0x52: return "UP";
         default: return NULL;
-    }
-}
-
-static void build_key_string(uint8_t keycode) {
-    last_key_text[0] = '\0';
-    
-    if (modifiers & MOD_LGUI || modifiers & MOD_RGUI) {
-        strcat(last_key_text, "CMD+");
-    }
-    if (modifiers & MOD_LSFT || modifiers & MOD_RSFT) {
-        strcat(last_key_text, "SFT+");
-    }
-    if (modifiers & MOD_LCTL || modifiers & MOD_RCTL) {
-        strcat(last_key_text, "CTL+");
-    }
-    if (modifiers & MOD_LALT || modifiers & MOD_RALT) {
-        strcat(last_key_text, "ALT+");
-    }
-    
-    const char* key_name = get_key_name(keycode);
-    if (key_name != NULL) {
-        strcat(last_key_text, key_name);
-    } else {
-        char buf[8];
-        snprintf(buf, sizeof(buf), "0x%02X", keycode);
-        strcat(last_key_text, buf);
     }
 }
 
@@ -277,17 +257,44 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     uint8_t keycode = ev->keycode;
     bool pressed = ev->state;
     
-    if (keycode >= 0xE0 && keycode <= 0xE7) {
-        if (pressed) {
-            modifiers |= (1 << (keycode - 0xE0));
-        } else {
-            modifiers &= ~(1 << (keycode - 0xE0));
-        }
-        return 0;
+    // Track modifier keys explicitly
+    switch(keycode) {
+        case 0xE0: mod_lctrl = pressed; return 0;
+        case 0xE1: mod_lshift = pressed; return 0;
+        case 0xE2: mod_lalt = pressed; return 0;
+        case 0xE3: mod_lgui = pressed; return 0;
+        case 0xE4: mod_rctrl = pressed; return 0;
+        case 0xE5: mod_rshift = pressed; return 0;
+        case 0xE6: mod_ralt = pressed; return 0;
+        case 0xE7: mod_rgui = pressed; return 0;
     }
     
+    // Build display string when regular key is pressed
     if (pressed && keycode >= 0x04 && keycode <= 0x52) {
-        build_key_string(keycode);
+        last_key_text[0] = '\0';
+        
+        if (mod_lgui || mod_rgui) {
+            strcat(last_key_text, "CMD+");
+        }
+        if (mod_lshift || mod_rshift) {
+            strcat(last_key_text, "SFT+");
+        }
+        if (mod_lctrl || mod_rctrl) {
+            strcat(last_key_text, "CTL+");
+        }
+        if (mod_lalt || mod_ralt) {
+            strcat(last_key_text, "ALT+");
+        }
+        
+        const char* key_name = get_key_name(keycode);
+        if (key_name != NULL) {
+            strcat(last_key_text, key_name);
+        } else {
+            char buf[8];
+            snprintf(buf, sizeof(buf), "0x%02X", keycode);
+            strcat(last_key_text, buf);
+        }
+        
         last_key_time = k_uptime_get();
         update_key_display();
     }
