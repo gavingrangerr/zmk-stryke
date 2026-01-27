@@ -3,21 +3,221 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+    macros {
+        // Base Layer
+        cmd_c: cmd_c {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(C)>;
+            label = "CMD+C";
+        };
+        
+        cmd_v: cmd_v {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(V)>;
+            label = "CMD+V";
+        };
+        
+        cmd_x: cmd_x {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(X)>;
+            label = "CMD+X";
+        };
+        
+        cmd_z: cmd_z {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(Z)>;
+            label = "CMD+Z";
+        };
+        
+        cmd_a: cmd_a {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(A)>;
+            label = "CMD+A";
+        };
+        
+        cmd_s: cmd_s {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(S)>;
+            label = "CMD+S";
+        };
+        
+        cmd_f: cmd_f {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(F)>;
+            label = "CMD+F";
+        };
+        
+        cmd_sft_z: cmd_sft_z {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(LS(Z))>;
+            label = "CMD+SFT+Z";
+        };
+        
+        screenshot: screenshot {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(LS(N3))>;
+            label = "CMD+SFT+3";
+        };
+        
+        screenshot_area: screenshot_area {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(LS(N4))>;
+            label = "CMD+SFT+4";
+        };
+        
+        // Fusion Layer
+        cmd_k: cmd_k {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(K)>;
+            label = "CMD+K";
+        };
+        
+        cmd_1: cmd_1 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(N1)>;
+            label = "CMD+1";
+        };
+        
+        cmd_2: cmd_2 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(N2)>;
+            label = "CMD+2";
+        };
+        
+        cmd_0: cmd_0 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(N0)>;
+            label = "CMD+0";
+        };
+        
+        // VS-Code Layer
+        cmd_p: cmd_p {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(P)>;
+            label = "CMD+P";
+        };
+        
+        cmd_sft_p: cmd_sft_p {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LS(LG(P))>;
+            label = "CMD+SFT+P";
+        };
+        
+        cmd_b: cmd_b {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(B)>;
+            label = "CMD+B";
+        };
+        
+        cmd_slash: cmd_slash {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(FSLH)>;
+            label = "CMD+/";
+        };
+        
+        cmd_d: cmd_d {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(D)>;
+            label = "CMD+D";
+        };
+        
+        cmd_sft_l: cmd_sft_l {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LS(LG(L))>;
+            label = "CMD+SFT+L";
+        };
+        
+        cmd_quote: cmd_quote {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(SQT)>;
+            label = "CMD+'";
+        };
+        
+        cmd_sft_f: cmd_sft_f {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LS(LG(F))>;
+            label = "CMD+SFT+F";
+        };
+        
+        cmd_sft_e: cmd_sft_e {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LS(LG(E))>;
+            label = "CMD+SFT+E";
+        };
+        
+        // Arduino Layer
+        cmd_r: cmd_r {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(R)>;
+            label = "CMD+R";
+        };
+        
+        cmd_u: cmd_u {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(U)>;
+            label = "CMD+U";
+        };
+        
+        cmd_sft_m: cmd_sft_m {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LS(LG(M))>;
+            label = "CMD+SFT+M";
+        };
+        
+        cmd_t: cmd_t {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(T)>;
+            label = "CMD+T";
+        };
+        
+        cmd_l: cmd_l {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(L)>;
+            label = "CMD+L";
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
         base_layer {
-            label = "Base";
-            bindings = <
-                &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
-                &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
-                &kp LG(LS(N3))  &kp LG(LS(N4))  &bootloader     &tog 1
+            bindings = 
+                &cmd_c          &cmd_v          &cmd_x          &cmd_z
+                &cmd_a          &cmd_s          &cmd_f          &cmd_sft_z
+                &screenshot     &screenshot_area &bootloader    &tog 1
             >;
         };
 
         kicad_layer {
-            label = "KiCad";
-            bindings = <
+            bindings = 
                 &kp R           &kp M           &kp G           &kp DEL
                 &kp V           &kp E           &kp X           &kp W
                 &kp B           &kp F           &kp H           &tog 2
@@ -25,28 +225,25 @@
         };
         
         fusion_layer {
-            label = "Fusion";
-            bindings = <
-                &kp LG(K)       &kp R           &kp L           &kp D
-                &kp E           &kp Q           &kp F           &kp LG(Z)
-                &kp LG(N1)      &kp LG(N2)      &kp LG(N0)      &tog 3
+            bindings = 
+                &cmd_k          &kp R           &kp L           &kp D
+                &kp E           &kp Q           &kp F           &cmd_z
+                &cmd_1          &cmd_2          &cmd_0          &tog 3
             >;
         };
 
         vscode_layer {
-            label = "VS-Code";
-            bindings = <
-                &kp LG(P)       &kp LS(LG(P))   &kp LG(B)       &kp LG(FSLH)
-                &kp LG(D)       &kp LS(LG(L))   &kp LG(F)       &kp LG(Z)
-                &kp LG(SQT)     &kp LS(LG(F))   &kp LS(LG(E))   &tog 4
+            bindings = 
+                &cmd_p          &cmd_sft_p      &cmd_b          &cmd_slash
+                &cmd_d          &cmd_sft_l      &cmd_f          &cmd_z
+                &cmd_quote      &cmd_sft_f      &cmd_sft_e      &tog 4
             >;
         };
 
         arduino_layer {
-            label = "Arduino";
-            bindings = <
-                &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
-                &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
+            bindings = 
+                &cmd_r          &cmd_u          &cmd_sft_m      &cmd_k
+                &cmd_t          &cmd_z          &cmd_l          &cmd_s
                 &bt BT_CLR      &bt BT_NXT      &sys_reset      &to 0
             >;
         };

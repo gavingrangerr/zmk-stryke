@@ -251,6 +251,9 @@ static void display_work_handler(struct k_work *work) {
     if (gui) {
         strcat(last_key_text, "CMD+");
     }
+    if (shift && (gui || ctrl || alt)) {
+        strcat(last_key_text, "SFT+");
+    }
     if (ctrl) {
         strcat(last_key_text, "CTL+");
     }
@@ -258,7 +261,7 @@ static void display_work_handler(struct k_work *work) {
         strcat(last_key_text, "ALT+");
     }
     
-    const char* key_name = get_key_name(pending_keycode, shift);
+    const char* key_name = get_key_name(pending_keycode, shift && !gui && !ctrl && !alt);
     if (key_name != NULL) {
         strcat(last_key_text, key_name);
     } else {
