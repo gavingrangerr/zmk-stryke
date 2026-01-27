@@ -5,69 +5,56 @@
 #include <lvgl.h>
 
 static lv_obj_t *screen = NULL;
-static bool widgets_initialized = false;
-static struct zmk_widget_layer_status layer_status_widget;
-static struct zmk_widget_battery_status battery_status_widget;
-static lv_obj_t *title_label = NULL;
-static lv_obj_t *status_label = NULL;
+struct zmk_widget_layer_status layer_status_widget;
+struct zmk_widget_battery_status battery_status_widget;
 
-static void create_normal_ui(lv_obj_t *parent) {
-    // Battery widget
-    zmk_widget_battery_status_init(&battery_status_widget, parent);
-    lv_obj_align(
-        zmk_widget_battery_status_obj(&battery_status_widget),
-        LV_ALIGN_TOP_LEFT, 0, 0
-    );
+// Work structure to handle the splash screen timeout
+static struct k_work_delayable splash_work;
 
-    // Layer widget
-    zmk_widget_layer_status_init(&layer_status_widget, parent);
-    lv_obj_align(
-        zmk_widget_layer_status_obj(&layer_status_widget),
-        LV_ALIGN_TOP_RIGHT, 0, 0
-    );
+static void create_normal_ui() {
+    lv_obj_clean(screen); // Wipe the "Booting" text
+
+    // Battery widget (Top Left)
+    zmk_widget_battery_status_init(&battery_status_widget, screen);
+    lv_obj_align(zmk_widget_battery_status_obj(&battery_status_widget), LV_ALIGN_TOP_LEFT, 0, 0);
+
+    // Layer widget (Top Right)
+    zmk_widget_layer_status_init(&layer_status_widget, screen);
+    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_TOP_RIGHT, 0, 0);
 
     // Center Title
-    title_label = lv_label_create(parent);
+    lv_obj_t *title_label = lv_label_create(screen);
     lv_label_set_text(title_label, "STRYKE");
-    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_12, LV_PART_MAIN);
+    // Match this to your .conf! If you enabled 16, use 16 here.
+    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_16, LV_PART_MAIN); 
     lv_obj_align(title_label, LV_ALIGN_CENTER, 0, 0);
 
     // Bottom label
-    status_label = lv_label_create(parent);
+    lv_obj_t *status_label = lv_label_create(screen);
     lv_label_set_text(status_label, "NEXUS PRO");
     lv_obj_align(status_label, LV_ALIGN_BOTTOM_MID, 0, -2);
 }
 
+// Callback function that runs after the timer ends
+static void splash_expiry_function(struct k_work *work) {
+    create_normal_ui();
+}
+
 lv_obj_t *zmk_display_status_screen(void) {
-    // If screen exists and widgets initialized, return it
-    if (screen != NULL && widgets_initialized) {
-        return screen;
-    }
+    if (screen == NULL) {
+        screen = lv_obj_create(NULL);
+        lv_obj_set_size(screen, 128, 64);
+        lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    // If screen exists but widgets not initialized (after splash), create UI
-    if (screen != NULL && !widgets_initialized) {
-        // Clear splash screen if it exists
-        lv_obj_clean(screen);
-        create_normal_ui(screen);
-        widgets_initialized = true;
-        return screen;
-    }
-
-    // Create new screen
-    screen = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
-
-    // Show splash for first 5 seconds
-    if (k_uptime_get() < 5000) {
+        // Create Splash Screen
         lv_obj_t *splash_label = lv_label_create(screen);
         lv_label_set_text(splash_label, "STRYKE BOOTING...");
         lv_obj_align(splash_label, LV_ALIGN_CENTER, 0, 0);
-        widgets_initialized = false;
-    } else {
-        create_normal_ui(screen);
-        widgets_initialized = true;
-    }
 
+        // Schedule the switch to normal UI in 5 seconds
+        k_work_init_delayable(&splash_work, splash_expiry_function);
+        k_work_schedule(&splash_work, K_MSEC(5000));
+    }
     return screen;
 }
