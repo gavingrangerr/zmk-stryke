@@ -4,10 +4,16 @@
 #include <zmk/display/widgets/battery_status.h>
 #include <lvgl.h>
 
-static lv_obj_t *screen = NULL;
-struct zmk_widget_layer_status layer_status_widget;
-struct zmk_widget_battery_status battery_status_widget;
+// 1. ZMK is a mix of C and C++. We must wrap custom display code 
+// to ensure the linker finds the function names correctly.
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+static lv_obj_t *screen = NULL;
+// 2. These must be 'static' or 'extern' to avoid multiple definition errors
+static struct zmk_widget_layer_status layer_status_widget;
+static struct zmk_widget_battery_status battery_status_widget;
 static struct k_work_delayable splash_work;
 
 static void create_normal_ui() {
@@ -23,15 +29,17 @@ static void create_normal_ui() {
     zmk_widget_layer_status_init(&layer_status_widget, screen);
     lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_TOP_RIGHT, 0, 0);
 
-    // Center Title - NEXUS PRO
+    // Center Title - STRYKE
     lv_obj_t *title_label = lv_label_create(screen);
     lv_label_set_text(title_label, "STRYKE");
+    // Ensure CONFIG_LV_FONT_MONTSERRAT_16=y is in your .conf
     lv_obj_set_style_text_font(title_label, &lv_font_montserrat_16, LV_PART_MAIN); 
     lv_obj_align(title_label, LV_ALIGN_CENTER, 0, -5);
 
-    // Bottom Subtitle
+    // Bottom Subtitle - NEXUS PRO
     lv_obj_t *status_label = lv_label_create(screen);
     lv_label_set_text(status_label, "NEXUS PRO");
+    // Ensure CONFIG_LV_FONT_MONTSERRAT_10=y is in your .conf
     lv_obj_set_style_text_font(status_label, &lv_font_montserrat_10, LV_PART_MAIN);
     lv_obj_align(status_label, LV_ALIGN_BOTTOM_MID, 0, -5);
 }
@@ -40,10 +48,10 @@ static void splash_expiry_function(struct k_work *work) {
     create_normal_ui();
 }
 
+// 3. This is the main function ZMK calls to boot the screen
 lv_obj_t *zmk_display_status_screen(void) {
     if (screen == NULL) {
         screen = lv_obj_create(NULL);
-        // Force the screen to match SSD1306 dimensions
         lv_obj_set_size(screen, 128, 64);
         lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
         lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
@@ -54,8 +62,13 @@ lv_obj_t *zmk_display_status_screen(void) {
         lv_obj_set_style_text_color(splash_label, lv_color_white(), LV_PART_MAIN);
         lv_obj_align(splash_label, LV_ALIGN_CENTER, 0, 0);
 
+        // Schedule transition to normal UI
         k_work_init_delayable(&splash_work, splash_expiry_function);
         k_work_schedule(&splash_work, K_MSEC(5000));
     }
     return screen;
 }
+
+#ifdef __cplusplus
+}
+#endif
