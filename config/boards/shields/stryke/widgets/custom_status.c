@@ -26,6 +26,12 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
+// Modifier state tracking
+static bool lgui_active = false;
+static bool lshift_active = false;
+static bool lctrl_active = false;
+static bool lalt_active = false;
+
 // Key code to string mapping (simplified - extend as needed)
 static const char* get_key_name(uint32_t keycode) {
     // HID usage codes to key names
@@ -105,16 +111,49 @@ static const char* get_key_name(uint32_t keycode) {
         case 0x50: return "LFT";
         case 0x51: return "DN";
         case 0x52: return "UP";
-        case 0xE0: return "LCTL";
-        case 0xE1: return "LSFT";
-        case 0xE2: return "LALT";
-        case 0xE3: return "LGUI";
-        case 0xE4: return "RCTL";
-        case 0xE5: return "RSFT";
-        case 0xE6: return "RALT";
-        case 0xE7: return "RGUI";
-        default: return "???";
+        case 0xE0: return "CTL";
+        case 0xE1: return "SFT";
+        case 0xE2: return "ALT";
+        case 0xE3: return "GUI";
+        case 0xE4: return "CTL";
+        case 0xE5: return "SFT";
+        case 0xE6: return "ALT";
+        case 0xE7: return "GUI";
+        default: return NULL;
     }
+}
+
+// Build display string with modifiers
+static void build_key_display(uint32_t keycode) {
+    const char* key_name = get_key_name(keycode);
+    
+    // Don't display if key name not found
+    if (key_name == NULL) {
+        return;
+    }
+    
+    // Reset buffer
+    last_key_text[0] = '\0';
+    
+    // Build modifier string
+    if (lgui_active) {
+        strcat(last_key_text, "CMD+");
+    }
+    if (lshift_active) {
+        strcat(last_key_text, "SFT+");
+    }
+    if (lctrl_active) {
+        strcat(last_key_text, "CTL+");
+    }
+    if (lalt_active) {
+        strcat(last_key_text, "ALT+");
+    }
+    
+    // Add the key name
+    strcat(last_key_text, key_name);
+    
+    // Update timestamp
+    last_key_time = k_uptime_get();
 }
 
 // Find best text size that fits within constraints
@@ -281,50 +320,11 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
     if (ev == NULL) return 0;
     
-    // Only update on key press (not release)
-    if (!ev->state) return 0;
+    uint32_t keycode = ev->keycode;
+    bool pressed = ev->state;
     
-    // Get the key name
-    const char* key_name = get_key_name(ev->keycode);
-    
-    // Update last key
-    strncpy(last_key_text, key_name, sizeof(last_key_text) - 1);
-    last_key_text[sizeof(last_key_text) - 1] = '\0';
-    last_key_time = k_uptime_get();
-    
-    update_key_display();
-    
-    return 0;
-}
-
-// Register event listeners
-ZMK_LISTENER(custom_status_layer, layer_state_changed_cb);
-ZMK_SUBSCRIPTION(custom_status_layer, zmk_layer_state_changed);
-
-ZMK_LISTENER(custom_status_keycode, keycode_state_changed_cb);
-ZMK_SUBSCRIPTION(custom_status_keycode, zmk_keycode_state_changed);
-
-// Main entry point
-lv_obj_t *zmk_display_status_screen(void) {
-    if (screen == NULL) {
-        screen = lv_obj_create(NULL);
-        lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-        
-        // Create the UI
-        create_ui();
-        
-        // Create animation timer (50ms refresh for smooth animations)
-        lv_timer_create(animation_timer_cb, 50, NULL);
-        
-        // Get initial layer state
-        current_layer = zmk_keymap_highest_layer_active();
-        if (current_layer > 4) current_layer = 4;
-        update_layer_indicators();
+    // Track modifier states
+    if (keycode == 0xE0 || keycode == 0xE4) { // Left/Right Ctrl
+        lctrl_active = pressed;
+        return 0; // Don't display modifiers alone
     }
-    
-    return screen;
-}
-
-#ifdef __cplusplus
-}
-#endif
