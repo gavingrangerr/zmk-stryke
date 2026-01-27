@@ -1,9 +1,9 @@
 #include <zephyr/kernel.h>
 #include <zmk/display/status_screen.h>
 #include <zmk/events/layer_state_changed.h>
-#include <zmk/events/keycode_state_changed.h>
+#include <zmk/events/position_state_changed.h>
 #include <zmk/keymap.h>
-#include <zmk/hid.h>
+#include <zmk/behavior.h>
 #include <lvgl.h>
 
 #ifdef __cplusplus
@@ -23,11 +23,6 @@ static lv_obj_t *layer_indicators[5];
 static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
-
-static bool lgui_active = false;
-static bool lshift_active = false;
-static bool lctrl_active = false;
-static bool lalt_active = false;
 
 static const char* get_key_name(uint32_t keycode) {
     switch(keycode) {
@@ -108,31 +103,6 @@ static const char* get_key_name(uint32_t keycode) {
         case 0x52: return "UP";
         default: return NULL;
     }
-}
-
-static void build_key_display(uint32_t keycode) {
-    const char* key_name = get_key_name(keycode);
-    if (key_name == NULL) {
-        return;
-    }
-    
-    last_key_text[0] = '\0';
-    
-    if (lgui_active) {
-        strcat(last_key_text, "CMD+");
-    }
-    if (lshift_active) {
-        strcat(last_key_text, "SFT+");
-    }
-    if (lctrl_active) {
-        strcat(last_key_text, "CTL+");
-    }
-    if (lalt_active) {
-        strcat(last_key_text, "ALT+");
-    }
-    
-    strcat(last_key_text, key_name);
-    last_key_time = k_uptime_get();
 }
 
 static int find_best_text_size(const char* text, int max_width, int max_height) {
@@ -270,34 +240,54 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
     return 0;
 }
 
-static int keycode_state_changed_cb(const zmk_event_t *eh) {
-    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
+static int position_state_changed_cb(const zmk_event_t *eh) {
+    struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
     if (ev == NULL) return 0;
     
-    uint32_t keycode = ev->keycode;
-    bool pressed = ev->state;
+    // Only process key presses, not releases
+    if (!ev->state) return 0;
     
-    if (keycode == 0xE0 || keycode == 0xE4) {
-        lctrl_active = pressed;
-        return 0;
-    }
-    if (keycode == 0xE1 || keycode == 0xE5) {
-        lshift_active = pressed;
-        return 0;
-    }
-    if (keycode == 0xE2 || keycode == 0xE6) {
-        lalt_active = pressed;
-        return 0;
-    }
-    if (keycode == 0xE3 || keycode == 0xE7) {
-        lgui_active = pressed;
-        return 0;
-    }
+    // Get the current layer
+    uint8_t layer = zmk_keymap_highest_layer_active();
     
-    if (!pressed) return 0;
+    // Get the binding for this position on this layer
+    const struct zmk_behavior_binding *binding = 
+        zmk_keymap_get_layer_binding(layer, ev->position);
     
-    build_key_display(keycode);
-    update_key_display();
+    if (binding == NULL) return 0;
+    
+    // Reset the display text
+    last_key_text[0] = '\0';
+    
+    // Check if it's a key press behavior
+    if (strcmp(binding->behavior_dev, "KEY_PRESS") == 0) {
+        uint32_t param1 = binding->param1;
+        uint32_t param2 = binding->param2;
+        
+        // param1 contains modifiers, param2 contains the base key
+        // Modifiers are in bits: GUI(bit 3), ALT(bit 2), SHIFT(bit 1), CTRL(bit 0)
+        bool has_gui = (param1 & (1 << 3)) != 0;
+        bool has_alt = (param1 & (1 << 2)) != 0;
+        bool has_shift = (param1 & (1 << 1)) != 0;
+        bool has_ctrl = (param1 & (1 << 0)) != 0;
+        
+        // Build the combo string
+        if (has_gui) strcat(last_key_text, "CMD+");
+        if (has_shift) strcat(last_key_text, "SFT+");
+        if (has_ctrl) strcat(last_key_text, "CTL+");
+        if (has_alt) strcat(last_key_text, "ALT+");
+        
+        // Get the base key name
+        const char* key_name = get_key_name(param2);
+        if (key_name != NULL) {
+            strcat(last_key_text, key_name);
+        } else {
+            strcat(last_key_text, "???");
+        }
+        
+        last_key_time = k_uptime_get();
+        update_key_display();
+    }
     
     return 0;
 }
@@ -305,8 +295,8 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
 ZMK_LISTENER(custom_status_layer, layer_state_changed_cb);
 ZMK_SUBSCRIPTION(custom_status_layer, zmk_layer_state_changed);
 
-ZMK_LISTENER(custom_status_keycode, keycode_state_changed_cb);
-ZMK_SUBSCRIPTION(custom_status_keycode, zmk_keycode_state_changed);
+ZMK_LISTENER(custom_status_position, position_state_changed_cb);
+ZMK_SUBSCRIPTION(custom_status_position, zmk_position_state_changed);
 
 lv_obj_t *zmk_display_status_screen(void) {
     if (screen == NULL) {
