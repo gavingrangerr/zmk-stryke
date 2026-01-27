@@ -1,9 +1,11 @@
 #include <zephyr/kernel.h>
 #include <zmk/display/status_screen.h>
 #include <zmk/events/layer_state_changed.h>
-#include <zmk/events/position_state_changed.h>
+#include <zmk/events/usb_conn_state_changed.h>
+#include <zmk/hid.h>
 #include <zmk/keymap.h>
-#include <zmk/behavior.h>
+#include <zmk/event_manager.h>
+#include <zmk/events/keycode_state_changed.h>
 #include <lvgl.h>
 
 #ifdef __cplusplus
@@ -23,6 +25,8 @@ static lv_obj_t *layer_indicators[5];
 static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
+
+static uint8_t modifiers = 0;
 
 static const char* get_key_name(uint32_t keycode) {
     switch(keycode) {
@@ -102,6 +106,32 @@ static const char* get_key_name(uint32_t keycode) {
         case 0x51: return "DN";
         case 0x52: return "UP";
         default: return NULL;
+    }
+}
+
+static void build_key_string(uint8_t keycode) {
+    last_key_text[0] = '\0';
+    
+    if (modifiers & MOD_LGUI || modifiers & MOD_RGUI) {
+        strcat(last_key_text, "CMD+");
+    }
+    if (modifiers & MOD_LSHIFT || modifiers & MOD_RSHIFT) {
+        strcat(last_key_text, "SFT+");
+    }
+    if (modifiers & MOD_LCTRL || modifiers & MOD_RCTRL) {
+        strcat(last_key_text, "CTL+");
+    }
+    if (modifiers & MOD_LALT || modifiers & MOD_RALT) {
+        strcat(last_key_text, "ALT+");
+    }
+    
+    const char* key_name = get_key_name(keycode);
+    if (key_name != NULL) {
+        strcat(last_key_text, key_name);
+    } else {
+        char buf[8];
+        snprintf(buf, sizeof(buf), "0x%02X", keycode);
+        strcat(last_key_text, buf);
     }
 }
 
@@ -240,70 +270,24 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
     return 0;
 }
 
-static int position_state_changed_cb(const zmk_event_t *eh) {
-    struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
+static int keycode_state_changed_cb(const zmk_event_t *eh) {
+    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
     if (ev == NULL) return 0;
     
-    // Only process key presses, not releases
-    if (!ev->state) return 0;
+    uint8_t keycode = ev->keycode;
+    bool pressed = ev->state;
     
-    // Get the binding at this position
-    struct zmk_behavior_binding binding = zmk_keymap_get_binding(
-        zmk_keymap_layer_index_to_id(zmk_keymap_highest_layer_active()),
-        ev->position
-    );
-    
-    // Reset the display text
-    last_key_text[0] = '\0';
-    
-    // Check if it's a key press behavior (&kp)
-    if (strcmp(binding.behavior_dev, "KEY_PRESS") == 0) {
-        uint32_t keycode = binding.param1;
-        
-        // Parse out modifiers from the keycode
-        // ZMK stores modifiers in upper byte and key in lower byte
-        bool has_gui = (keycode & 0x08000000) != 0;
-        bool has_alt = (keycode & 0x04000000) != 0;
-        bool has_shift = (keycode & 0x02000000) != 0;
-        bool has_ctrl = (keycode & 0x01000000) != 0;
-        
-        // Get base keycode (lower 8 bits)
-        uint8_t base_key = keycode & 0xFF;
-        
-        // Build the combo string
-        if (has_gui) strcat(last_key_text, "CMD+");
-        if (has_shift) strcat(last_key_text, "SFT+");
-        if (has_ctrl) strcat(last_key_text, "CTL+");
-        if (has_alt) strcat(last_key_text, "ALT+");
-        
-        // Get the base key name
-        const char* key_name = get_key_name(base_key);
-        if (key_name != NULL) {
-            strcat(last_key_text, key_name);
+    if (keycode >= 0xE0 && keycode <= 0xE7) {
+        if (pressed) {
+            modifiers |= (1 << (keycode - 0xE0));
         } else {
-            // Fallback to showing the keycode
-            char buf[8];
-            snprintf(buf, sizeof(buf), "0x%02X", base_key);
-            strcat(last_key_text, buf);
+            modifiers &= ~(1 << (keycode - 0xE0));
         }
-        
-        last_key_time = k_uptime_get();
-        update_key_display();
-    } else {
-        // For non-&kp bindings (like &tog, &to, &bt, etc), show the behavior name
-        if (strcmp(binding.behavior_dev, "LAYER_TAP") == 0) {
-            snprintf(last_key_text, sizeof(last_key_text), "LT");
-        } else if (strcmp(binding.behavior_dev, "MOMENTARY_LAYER") == 0) {
-            snprintf(last_key_text, sizeof(last_key_text), "MO %d", binding.param1);
-        } else if (strcmp(binding.behavior_dev, "TOGGLE_LAYER") == 0) {
-            snprintf(last_key_text, sizeof(last_key_text), "TOG %d", binding.param1);
-        } else if (strcmp(binding.behavior_dev, "TO_LAYER") == 0) {
-            snprintf(last_key_text, sizeof(last_key_text), "TO %d", binding.param1);
-        } else {
-            // Generic fallback
-            strncpy(last_key_text, binding.behavior_dev, sizeof(last_key_text) - 1);
-        }
-        
+        return 0;
+    }
+    
+    if (pressed && keycode >= 0x04 && keycode <= 0x52) {
+        build_key_string(keycode);
         last_key_time = k_uptime_get();
         update_key_display();
     }
@@ -314,8 +298,8 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
 ZMK_LISTENER(custom_status_layer, layer_state_changed_cb);
 ZMK_SUBSCRIPTION(custom_status_layer, zmk_layer_state_changed);
 
-ZMK_LISTENER(custom_status_position, position_state_changed_cb);
-ZMK_SUBSCRIPTION(custom_status_position, zmk_position_state_changed);
+ZMK_LISTENER(custom_status_keycode, keycode_state_changed_cb);
+ZMK_SUBSCRIPTION(custom_status_keycode, zmk_keycode_state_changed);
 
 lv_obj_t *zmk_display_status_screen(void) {
     if (screen == NULL) {
