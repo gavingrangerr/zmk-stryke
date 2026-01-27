@@ -236,21 +236,23 @@ static void update_layer_indicators(void) {
 static void display_work_handler(struct k_work *work) {
     if (pending_keycode == 0) return;
     
-    last_key_text[0] = '\0';
+    uint32_t keycode = pending_keycode;
+    pending_keycode = 0;
     
-    uint8_t modifiers = (pending_keycode >> 24) & 0xFF;
-    uint8_t usage_page = (pending_keycode >> 16) & 0xFF;
-    uint8_t base_keycode = pending_keycode & 0xFF;
+    uint8_t modifiers = (keycode >> 24) & 0xFF;
+    uint8_t usage_page = (keycode >> 16) & 0xFF;
+    uint16_t base_keycode = keycode & 0xFFFF;
     
     if (usage_page != 0x07) {
-        pending_keycode = 0;
         return;
     }
     
-    bool gui = (modifiers & 0x08) != 0;
-    bool shift = (modifiers & 0x02) != 0;
+    last_key_text[0] = '\0';
+    
     bool ctrl = (modifiers & 0x01) != 0;
+    bool shift = (modifiers & 0x02) != 0;
     bool alt = (modifiers & 0x04) != 0;
+    bool gui = (modifiers & 0x08) != 0;
     
     if (gui) {
         if (shift) {
@@ -371,9 +373,10 @@ static void display_work_handler(struct k_work *work) {
         }
     }
     
-    last_key_time = k_uptime_get();
-    update_key_display();
-    pending_keycode = 0;
+    if (last_key_text[0] != '\0') {
+        last_key_time = k_uptime_get();
+        update_key_display();
+    }
 }
 
 static void create_ui(void) {
