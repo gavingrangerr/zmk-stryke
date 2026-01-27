@@ -127,6 +127,7 @@ static int find_best_text_size(const char* text, int max_width, int max_height) 
         int char_height = (size == 3) ? 24 : (size == 2) ? 16 : 8;
         
         int text_width = text_len * char_width;
+        int text_height = char_height;
         
         if (text_height <= max_height && text_width <= max_width) {
             return size;
