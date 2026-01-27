@@ -5,6 +5,9 @@
 #include <zmk/keymap.h>
 #include <zmk/events/keycode_state_changed.h>
 #include <lvgl.h>
+#include <logging/log.h>
+
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #ifdef __cplusplus
 extern "C" {
@@ -189,7 +192,12 @@ static const lv_font_t* get_font_for_size(int size) {
 }
 
 static void update_key_display(void) {
-    if (key_label == NULL) return;
+    if (key_label == NULL) {
+        LOG_WRN("key_label is NULL!");
+        return;
+    }
+    
+    LOG_DBG("Updating display with: %s", last_key_text);
     
     lv_label_set_text(key_label, last_key_text);
     
@@ -210,6 +218,10 @@ static void update_key_display(void) {
     }
     
     lv_obj_center(key_label);
+    
+    lv_obj_invalidate(key_label);
+    lv_obj_invalidate(key_card);
+    lv_obj_invalidate(screen);
 }
 
 static void update_layer_indicators(void) {
@@ -234,28 +246,28 @@ static void display_work_handler(struct k_work *work) {
     
     last_key_text[0] = '\0';
     
-    // Extract components from 32-bit keycode
-    uint8_t modifiers = (pending_keycode >> 24) & 0xFF;  // Bits 31-24
-    uint8_t usage_page = (pending_keycode >> 16) & 0xFF; // Bits 23-16
-    uint8_t base_keycode = pending_keycode & 0xFF;       // Bits 7-0
+    uint8_t modifiers = (pending_keycode >> 24) & 0xFF;
+    uint8_t usage_page = (pending_keycode >> 16) & 0xFF;
+    uint8_t base_keycode = pending_keycode & 0xFF;
     
-    // Check if it's a keyboard keycode
+    LOG_DBG("Processing keycode: 0x%08X, modifiers: 0x%02X, base: 0x%02X", 
+            pending_keycode, modifiers, base_keycode);
+    
     if (usage_page != 0x07) {
-        // Not a keyboard keycode, skip
+        LOG_DBG("Not a keyboard keycode (usage page: 0x%02X), skipping", usage_page);
         pending_keycode = 0;
         return;
     }
     
-    // Decode modifiers from the implicit_mods field
-    bool gui = (modifiers & 0x08) != 0;   // LGUI (CMD)
-    bool shift = (modifiers & 0x02) != 0; // LSHIFT
-    bool ctrl = (modifiers & 0x01) != 0;  // LCTRL
-    bool alt = (modifiers & 0x04) != 0;   // LALT
+    bool gui = (modifiers & 0x08) != 0;
+    bool shift = (modifiers & 0x02) != 0;
+    bool ctrl = (modifiers & 0x01) != 0;
+    bool alt = (modifiers & 0x04) != 0;
     
-    // Special handling for hardcoded macros
+    LOG_DBG("Modifiers: gui=%d, shift=%d, ctrl=%d, alt=%d", gui, shift, ctrl, alt);
+    
     if (gui) {
         if (shift) {
-            // CMD+SHIFT combinations
             switch(base_keycode) {
                 case 0x1D: strcpy(last_key_text, "CMD+SFT+Z"); break;
                 case 0x20: strcpy(last_key_text, "CMD+SFT+3"); break;
@@ -275,7 +287,6 @@ static void display_work_handler(struct k_work *work) {
                 }
             }
         } else {
-            // CMD-only combinations
             switch(base_keycode) {
                 case 0x06: strcpy(last_key_text, "CMD+C"); break;
                 case 0x19: strcpy(last_key_text, "CMD+V"); break;
@@ -374,9 +385,10 @@ static void display_work_handler(struct k_work *work) {
         }
     }
     
+    LOG_DBG("Display text: %s", last_key_text);
+    
     last_key_time = k_uptime_get();
     update_key_display();
-    
     pending_keycode = 0;
 }
 
@@ -452,6 +464,8 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     
     uint32_t keycode = ev->keycode;
     bool pressed = ev->state;
+    
+    LOG_DBG("Keycode event: 0x%08X, pressed: %d", keycode, pressed);
     
     if (pressed) {
         pending_keycode = keycode;
