@@ -247,29 +247,28 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
     // Only process key presses, not releases
     if (!ev->state) return 0;
     
-    // Get the current layer
-    uint8_t layer = zmk_keymap_highest_layer_active();
-    
-    // Get the binding for this position on this layer
-    const struct zmk_behavior_binding *binding = 
-        zmk_keymap_get_layer_binding(layer, ev->position);
-    
-    if (binding == NULL) return 0;
+    // Get the binding at this position
+    struct zmk_behavior_binding binding = zmk_keymap_get_binding(
+        zmk_keymap_layer_index_to_id(zmk_keymap_highest_layer_active()),
+        ev->position
+    );
     
     // Reset the display text
     last_key_text[0] = '\0';
     
-    // Check if it's a key press behavior
-    if (strcmp(binding->behavior_dev, "KEY_PRESS") == 0) {
-        uint32_t param1 = binding->param1;
-        uint32_t param2 = binding->param2;
+    // Check if it's a key press behavior (&kp)
+    if (strcmp(binding.behavior_dev, "KEY_PRESS") == 0) {
+        uint32_t keycode = binding.param1;
         
-        // param1 contains modifiers, param2 contains the base key
-        // Modifiers are in bits: GUI(bit 3), ALT(bit 2), SHIFT(bit 1), CTRL(bit 0)
-        bool has_gui = (param1 & (1 << 3)) != 0;
-        bool has_alt = (param1 & (1 << 2)) != 0;
-        bool has_shift = (param1 & (1 << 1)) != 0;
-        bool has_ctrl = (param1 & (1 << 0)) != 0;
+        // Parse out modifiers from the keycode
+        // ZMK stores modifiers in upper byte and key in lower byte
+        bool has_gui = (keycode & 0x08000000) != 0;
+        bool has_alt = (keycode & 0x04000000) != 0;
+        bool has_shift = (keycode & 0x02000000) != 0;
+        bool has_ctrl = (keycode & 0x01000000) != 0;
+        
+        // Get base keycode (lower 8 bits)
+        uint8_t base_key = keycode & 0xFF;
         
         // Build the combo string
         if (has_gui) strcat(last_key_text, "CMD+");
@@ -278,11 +277,31 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
         if (has_alt) strcat(last_key_text, "ALT+");
         
         // Get the base key name
-        const char* key_name = get_key_name(param2);
+        const char* key_name = get_key_name(base_key);
         if (key_name != NULL) {
             strcat(last_key_text, key_name);
         } else {
-            strcat(last_key_text, "???");
+            // Fallback to showing the keycode
+            char buf[8];
+            snprintf(buf, sizeof(buf), "0x%02X", base_key);
+            strcat(last_key_text, buf);
+        }
+        
+        last_key_time = k_uptime_get();
+        update_key_display();
+    } else {
+        // For non-&kp bindings (like &tog, &to, &bt, etc), show the behavior name
+        if (strcmp(binding.behavior_dev, "LAYER_TAP") == 0) {
+            snprintf(last_key_text, sizeof(last_key_text), "LT");
+        } else if (strcmp(binding.behavior_dev, "MOMENTARY_LAYER") == 0) {
+            snprintf(last_key_text, sizeof(last_key_text), "MO %d", binding.param1);
+        } else if (strcmp(binding.behavior_dev, "TOGGLE_LAYER") == 0) {
+            snprintf(last_key_text, sizeof(last_key_text), "TOG %d", binding.param1);
+        } else if (strcmp(binding.behavior_dev, "TO_LAYER") == 0) {
+            snprintf(last_key_text, sizeof(last_key_text), "TO %d", binding.param1);
+        } else {
+            // Generic fallback
+            strncpy(last_key_text, binding.behavior_dev, sizeof(last_key_text) - 1);
         }
         
         last_key_time = k_uptime_get();
