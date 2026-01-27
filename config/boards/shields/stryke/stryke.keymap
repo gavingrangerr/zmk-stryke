@@ -127,7 +127,7 @@
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             bindings = <&kp LG(FSLH)>;
-            label = "CMD+/";
+            label = "CMD+SLASH";
         };
         
         cmd_d: cmd_d {
@@ -148,7 +148,7 @@
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             bindings = <&kp LG(SQT)>;
-            label = "CMD+'";
+            label = "CMD+QUOTE";
         };
         
         cmd_sft_f: cmd_sft_f {
