@@ -90,32 +90,32 @@ static const char* get_key_name(uint32_t keycode, bool shift) {
     }
     
     switch(keycode) {
-        case 0x04: return "A";
-        case 0x05: return "B";
-        case 0x06: return "C";
-        case 0x07: return "D";
-        case 0x08: return "E";
-        case 0x09: return "F";
-        case 0x0A: return "G";
-        case 0x0B: return "H";
-        case 0x0C: return "I";
-        case 0x0D: return "J";
-        case 0x0E: return "K";
-        case 0x0F: return "L";
-        case 0x10: return "M";
-        case 0x11: return "N";
-        case 0x12: return "O";
-        case 0x13: return "P";
-        case 0x14: return "Q";
-        case 0x15: return "R";
-        case 0x16: return "S";
-        case 0x17: return "T";
-        case 0x18: return "U";
-        case 0x19: return "V";
-        case 0x1A: return "W";
-        case 0x1B: return "X";
-        case 0x1C: return "Y";
-        case 0x1D: return "Z";
+        case 0x04: return "a";
+        case 0x05: return "b";
+        case 0x06: return "c";
+        case 0x07: return "d";
+        case 0x08: return "e";
+        case 0x09: return "f";
+        case 0x0A: return "g";
+        case 0x0B: return "h";
+        case 0x0C: return "i";
+        case 0x0D: return "j";
+        case 0x0E: return "k";
+        case 0x0F: return "l";
+        case 0x10: return "m";
+        case 0x11: return "n";
+        case 0x12: return "o";
+        case 0x13: return "p";
+        case 0x14: return "q";
+        case 0x15: return "r";
+        case 0x16: return "s";
+        case 0x17: return "t";
+        case 0x18: return "u";
+        case 0x19: return "v";
+        case 0x1A: return "w";
+        case 0x1B: return "x";
+        case 0x1C: return "y";
+        case 0x1D: return "z";
         case 0x1E: return "1";
         case 0x1F: return "2";
         case 0x20: return "3";
@@ -247,6 +247,67 @@ static void display_work_handler(struct k_work *work) {
     bool ctrl = mod_lctrl || mod_rctrl;
     bool alt = mod_lalt || mod_ralt;
     bool gui = mod_lgui || mod_rgui;
+    
+    if (gui) {
+        if (shift) {
+            switch(pending_keycode) {
+                case 0x1D: strcpy(last_key_text, "CMD+SFT+Z"); break;
+                case 0x1E: strcpy(last_key_text, "CMD+SFT+3"); break;
+                case 0x1F: strcpy(last_key_text, "CMD+SFT+4"); break;
+                case 0x13: strcpy(last_key_text, "CMD+SFT+P"); break;
+                case 0x0F: strcpy(last_key_text, "CMD+SFT+L"); break;
+                case 0x09: strcpy(last_key_text, "CMD+SFT+F"); break;
+                case 0x08: strcpy(last_key_text, "CMD+SFT+E"); break;
+                case 0x10: strcpy(last_key_text, "CMD+SFT+M"); break;
+                default: {
+                    const char* key_name = get_key_name(pending_keycode, true);
+                    if (key_name != NULL) {
+                        strcpy(last_key_text, "CMD+SFT+");
+                        strcat(last_key_text, key_name);
+                    }
+                    break;
+                }
+            }
+        } else {
+            switch(pending_keycode) {
+                case 0x06: strcpy(last_key_text, "CMD+C"); break;
+                case 0x19: strcpy(last_key_text, "CMD+V"); break;
+                case 0x1B: strcpy(last_key_text, "CMD+X"); break;
+                case 0x1D: strcpy(last_key_text, "CMD+Z"); break;
+                case 0x04: strcpy(last_key_text, "CMD+A"); break;
+                case 0x16: strcpy(last_key_text, "CMD+S"); break;
+                case 0x09: strcpy(last_key_text, "CMD+F"); break;
+                case 0x0E: strcpy(last_key_text, "CMD+K"); break;
+                case 0x1E: strcpy(last_key_text, "CMD+1"); break;
+                case 0x1F: strcpy(last_key_text, "CMD+2"); break;
+                case 0x27: strcpy(last_key_text, "CMD+0"); break;
+                case 0x13: strcpy(last_key_text, "CMD+P"); break;
+                case 0x05: strcpy(last_key_text, "CMD+B"); break;
+                case 0x38: strcpy(last_key_text, "CMD+SLASH"); break;
+                case 0x07: strcpy(last_key_text, "CMD+D"); break;
+                case 0x34: strcpy(last_key_text, "CMD+QUOTE"); break;
+                case 0x15: strcpy(last_key_text, "CMD+R"); break;
+                case 0x18: strcpy(last_key_text, "CMD+U"); break;
+                case 0x17: strcpy(last_key_text, "CMD+T"); break;
+                case 0x0F: strcpy(last_key_text, "CMD+L"); break;
+                default: {
+                    const char* key_name = get_key_name(pending_keycode, false);
+                    if (key_name != NULL) {
+                        strcpy(last_key_text, "CMD+");
+                        strcat(last_key_text, key_name);
+                    }
+                    break;
+                }
+            }
+        }
+        
+        if (last_key_text[0] != '\0') {
+            last_key_time = k_uptime_get();
+            update_key_display();
+            pending_keycode = 0;
+            return;
+        }
+    }
     
     if (gui) {
         strcat(last_key_text, "CMD+");
