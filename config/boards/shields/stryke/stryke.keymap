@@ -6,8 +6,8 @@
     keymap {
         compatible = "zmk,keymap";
 
-        Base {
-            display-name = "Base";
+        base_layer {
+            label = "Base";
             bindings = 
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
                 &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
@@ -15,8 +15,8 @@
             >;
         };
 
-        KiCad {
-            display-name = "KiCad";
+        kicad_layer {
+            label = "KiCad";
             bindings = 
                 &kp R           &kp M           &kp G           &kp DEL
                 &kp V           &kp E           &kp X           &kp W
@@ -24,8 +24,8 @@
             >;
         };
         
-        Fusion {
-            display-name = "Fusion";
+        fusion_layer {
+            label = "Fusion";
             bindings = 
                 &kp LG(K)       &kp R           &kp L           &kp D
                 &kp E           &kp Q           &kp F           &kp LG(Z)
@@ -33,8 +33,8 @@
             >;
         };
 
-        VS_Code {
-            display-name = "VS-Code";
+        vscode_layer {
+            label = "VS-Code";
             bindings = 
                 &kp LG(P)       &kp LS(LG(P))   &kp LG(B)       &kp LG(FSLH)
                 &kp LG(D)       &kp LS(LG(L))   &kp LG(F)       &kp LG(Z)
@@ -42,8 +42,8 @@
             >;
         };
 
-        Arduino {
-            display-name = "Arduino";
+        arduino_layer {
+            label = "Arduino";
             bindings = 
                 &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
                 &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
