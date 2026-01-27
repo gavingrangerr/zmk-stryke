@@ -115,10 +115,10 @@ static void build_key_string(uint8_t keycode) {
     if (modifiers & MOD_LGUI || modifiers & MOD_RGUI) {
         strcat(last_key_text, "CMD+");
     }
-    if (modifiers & MOD_LSHIFT || modifiers & MOD_RSHIFT) {
+    if (modifiers & MOD_LSFT || modifiers & MOD_RSFT) {
         strcat(last_key_text, "SFT+");
     }
-    if (modifiers & MOD_LCTRL || modifiers & MOD_RCTRL) {
+    if (modifiers & MOD_LCTL || modifiers & MOD_RCTL) {
         strcat(last_key_text, "CTL+");
     }
     if (modifiers & MOD_LALT || modifiers & MOD_RALT) {
