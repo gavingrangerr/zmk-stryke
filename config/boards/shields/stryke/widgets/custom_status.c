@@ -28,28 +28,28 @@ static int64_t last_key_time = 0;
 
 static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
     {
-        "Copy",         "Paste",        "Cut",          "Undo",
-        "Select All",   "Save",         "Find",         "Redo",
-        "SS Full",      "SS Snip",      "Bootloader",   "KiCad"
+        "CMD+C",        "CMD+V",        "CMD+X",        "CMD+Z",
+        "CMD+A",        "CMD+S",        "CMD+F",        "CMD+SHFT+Z",
+        "CMD+SHFT+3",   "CMD+SHFT+4",   "Bootloader",   "KiCad"
     },
     {
-        "Rotate",       "Move",         "Grab",         "Delete",
-        "Via",          "Edit Value",   "Exchange",     "Wire",
-        "Bus",          "Fill Zone",    "Highlight",    "Fusion"
+        "R",            "M",            "G",            "DEL",
+        "V",            "E",            "X",            "W",
+        "B",            "F",            "H",            "Fusion"
     },
     {
-        "Cmd+K",        "Rotate",       "Line",         "Dimension",
-        "Extrude",      "Sketch",       "Fillet",       "Undo",
-        "Tab 1",        "Tab 2",        "Zoom All",     "VS Code"
+        "Cmd+K",        "R",            "L",            "D",
+        "E",            "Q",            "F",            "CMD+Z",
+        "CMD+1",        "CMD+2",        "CMD+0",        "VS Code"
     },
     {
-        "Cmd Palette",  "Show Cmds",    "Toggle Bar",   "Comment",
-        "Add Cursor",   "Sel Next",     "Find",         "Undo",
-        "Terminal",     "Find Files",   "Extensions",   "Arduino"
+        "Cmd+P",        "CMD+SHFT+P",   "CMD+B",        "CMD+FSLH",
+        "CMD+D",        "CMD+SHFT+L",   "CMD+F",        "CMD+Z",
+        "CMD+SQRT",     "CMD+SHFT+F",   "CMD+SHFT+E",   "Arduino"
     },
     {
-        "Upload",       "Upload USB",   "Monitor",      "Cmd+K",
-        "New Tab",      "Undo",         "Line Ref",     "Save",
+        "CMD+R",        "CMD+U",        "CMD+SHFT+M",   "CMD+K",
+        "CMD+T",        "CMD+Z",        "CMD+L",        "CMD+S",
         "BT Clear",     "BT Next",      "Reset",        "Base"
     }
 };
