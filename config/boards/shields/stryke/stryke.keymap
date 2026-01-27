@@ -205,7 +205,7 @@
         compatible = "zmk,keymap";
 
         base_layer {
-            bindings = 
+            bindings = <
                 &cmd_c          &cmd_v          &cmd_x          &cmd_z
                 &cmd_a          &cmd_s          &cmd_f          &cmd_sft_z
                 &screenshot     &screenshot_area &bootloader    &tog 1
@@ -213,7 +213,7 @@
         };
 
         kicad_layer {
-            bindings = 
+            bindings = <
                 &kp R           &kp M           &kp G           &kp DEL
                 &kp V           &kp E           &kp X           &kp W
                 &kp B           &kp F           &kp H           &tog 2
@@ -221,7 +221,7 @@
         };
         
         fusion_layer {
-            bindings = 
+            bindings = <
                 &cmd_k          &kp R           &kp L           &kp D
                 &kp E           &kp Q           &kp F           &cmd_z
                 &cmd_1          &cmd_2          &cmd_0          &tog 3
@@ -229,7 +229,7 @@
         };
 
         vscode_layer {
-            bindings = 
+            bindings = <
                 &cmd_p          &cmd_sft_p      &cmd_b          &cmd_slash
                 &cmd_d          &cmd_sft_l      &cmd_f          &cmd_z
                 &cmd_quote      &cmd_sft_f      &cmd_sft_e      &tog 4
@@ -237,7 +237,7 @@
         };
 
         arduino_layer {
-            bindings = 
+            bindings = <
                 &cmd_r          &cmd_u          &cmd_sft_m      &cmd_k
                 &cmd_t          &cmd_z          &cmd_l          &cmd_s
                 &bt BT_CLR      &bt BT_NXT      &sys_reset      &to 0
