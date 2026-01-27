@@ -189,12 +189,7 @@ static const lv_font_t* get_font_for_size(int size) {
 }
 
 static void update_key_display(void) {
-    if (key_label == NULL) {
-        LOG_WRN("key_label is NULL!");
-        return;
-    }
-    
-    LOG_DBG("Updating display with: %s", last_key_text);
+    if (key_label == NULL) return;
     
     lv_label_set_text(key_label, last_key_text);
     
@@ -247,11 +242,7 @@ static void display_work_handler(struct k_work *work) {
     uint8_t usage_page = (pending_keycode >> 16) & 0xFF;
     uint8_t base_keycode = pending_keycode & 0xFF;
     
-    LOG_DBG("Processing keycode: 0x%08X, modifiers: 0x%02X, base: 0x%02X", 
-            pending_keycode, modifiers, base_keycode);
-    
     if (usage_page != 0x07) {
-        LOG_DBG("Not a keyboard keycode (usage page: 0x%02X), skipping", usage_page);
         pending_keycode = 0;
         return;
     }
@@ -260,8 +251,6 @@ static void display_work_handler(struct k_work *work) {
     bool shift = (modifiers & 0x02) != 0;
     bool ctrl = (modifiers & 0x01) != 0;
     bool alt = (modifiers & 0x04) != 0;
-    
-    LOG_DBG("Modifiers: gui=%d, shift=%d, ctrl=%d, alt=%d", gui, shift, ctrl, alt);
     
     if (gui) {
         if (shift) {
@@ -382,8 +371,6 @@ static void display_work_handler(struct k_work *work) {
         }
     }
     
-    LOG_DBG("Display text: %s", last_key_text);
-    
     last_key_time = k_uptime_get();
     update_key_display();
     pending_keycode = 0;
@@ -461,8 +448,6 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     
     uint32_t keycode = ev->keycode;
     bool pressed = ev->state;
-    
-    LOG_DBG("Keycode event: 0x%08X, pressed: %d", keycode, pressed);
     
     if (pressed) {
         pending_keycode = keycode;
