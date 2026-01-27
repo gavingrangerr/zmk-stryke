@@ -1,9 +1,9 @@
 #include <zephyr/kernel.h>
 #include <zmk/display/status_screen.h>
 #include <zmk/events/layer_state_changed.h>
+#include <zmk/events/position_state_changed.h>
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
-#include <zmk/events/keycode_state_changed.h>
 #include <lvgl.h>
 
 #ifdef __cplusplus
@@ -14,6 +14,8 @@ extern "C" {
 #define SCREEN_HEIGHT 64
 #define CARD_HEIGHT 36
 #define MAX_TEXT_HEIGHT 16
+#define MAX_LAYERS 5
+#define MAX_POSITIONS 12
 
 static lv_obj_t *screen = NULL;
 static lv_obj_t *key_card = NULL;
@@ -24,140 +26,39 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
-static struct k_work_delayable display_work;
-static uint32_t pending_keycode = 0;
+static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
+    {
+        "Copy",         "Paste",        "Cut",          "Undo",
+        "Select All",   "Save",         "Find",         "Redo",
+        "SS Full",      "SS Snip",      "Bootloader",   "KiCad"
+    },
+    {
+        "Rotate",       "Move",         "Grab",         "Delete",
+        "Via",          "Edit Value",   "Exchange",     "Wire",
+        "Bus",          "Fill Zone",    "Highlight",    "Fusion"
+    },
+    {
+        "Cmd+K",        "Rotate",       "Line",         "Dimension",
+        "Extrude",      "Sketch",       "Fillet",       "Undo",
+        "Tab 1",        "Tab 2",        "Zoom All",     "VS Code"
+    },
+    {
+        "Cmd Palette",  "Show Cmds",    "Toggle Bar",   "Comment",
+        "Add Cursor",   "Sel Next",     "Find",         "Undo",
+        "Terminal",     "Find Files",   "Extensions",   "Arduino"
+    },
+    {
+        "Upload",       "Upload USB",   "Monitor",      "Cmd+K",
+        "New Tab",      "Undo",         "Line Ref",     "Save",
+        "BT Clear",     "BT Next",      "Reset",        "Base"
+    }
+};
 
-static const char* get_key_name(uint8_t keycode, bool shift) {
-    if (shift) {
-        switch(keycode) {
-            case 0x1E: return "!";
-            case 0x1F: return "@";
-            case 0x20: return "#";
-            case 0x21: return "$";
-            case 0x22: return "%";
-            case 0x23: return "^";
-            case 0x24: return "&";
-            case 0x25: return "*";
-            case 0x26: return "(";
-            case 0x27: return ")";
-            case 0x2D: return "_";
-            case 0x2E: return "+";
-            case 0x2F: return "{";
-            case 0x30: return "}";
-            case 0x31: return "|";
-            case 0x33: return ":";
-            case 0x34: return "\"";
-            case 0x35: return "~";
-            case 0x36: return "<";
-            case 0x37: return ">";
-            case 0x38: return "?";
-            case 0x04: return "A";
-            case 0x05: return "B";
-            case 0x06: return "C";
-            case 0x07: return "D";
-            case 0x08: return "E";
-            case 0x09: return "F";
-            case 0x0A: return "G";
-            case 0x0B: return "H";
-            case 0x0C: return "I";
-            case 0x0D: return "J";
-            case 0x0E: return "K";
-            case 0x0F: return "L";
-            case 0x10: return "M";
-            case 0x11: return "N";
-            case 0x12: return "O";
-            case 0x13: return "P";
-            case 0x14: return "Q";
-            case 0x15: return "R";
-            case 0x16: return "S";
-            case 0x17: return "T";
-            case 0x18: return "U";
-            case 0x19: return "V";
-            case 0x1A: return "W";
-            case 0x1B: return "X";
-            case 0x1C: return "Y";
-            case 0x1D: return "Z";
-        }
+static const char* get_key_name_by_position(uint8_t layer, uint8_t position) {
+    if (layer >= MAX_LAYERS || position >= MAX_POSITIONS) {
+        return NULL;
     }
-    
-    switch(keycode) {
-        case 0x04: return "a";
-        case 0x05: return "b";
-        case 0x06: return "c";
-        case 0x07: return "d";
-        case 0x08: return "e";
-        case 0x09: return "f";
-        case 0x0A: return "g";
-        case 0x0B: return "h";
-        case 0x0C: return "i";
-        case 0x0D: return "j";
-        case 0x0E: return "k";
-        case 0x0F: return "l";
-        case 0x10: return "m";
-        case 0x11: return "n";
-        case 0x12: return "o";
-        case 0x13: return "p";
-        case 0x14: return "q";
-        case 0x15: return "r";
-        case 0x16: return "s";
-        case 0x17: return "t";
-        case 0x18: return "u";
-        case 0x19: return "v";
-        case 0x1A: return "w";
-        case 0x1B: return "x";
-        case 0x1C: return "y";
-        case 0x1D: return "z";
-        case 0x1E: return "1";
-        case 0x1F: return "2";
-        case 0x20: return "3";
-        case 0x21: return "4";
-        case 0x22: return "5";
-        case 0x23: return "6";
-        case 0x24: return "7";
-        case 0x25: return "8";
-        case 0x26: return "9";
-        case 0x27: return "0";
-        case 0x28: return "ENT";
-        case 0x29: return "ESC";
-        case 0x2A: return "BSPC";
-        case 0x2B: return "TAB";
-        case 0x2C: return "SPC";
-        case 0x2D: return "-";
-        case 0x2E: return "=";
-        case 0x2F: return "[";
-        case 0x30: return "]";
-        case 0x31: return "\\";
-        case 0x33: return ";";
-        case 0x34: return "'";
-        case 0x35: return "`";
-        case 0x36: return ",";
-        case 0x37: return ".";
-        case 0x38: return "/";
-        case 0x39: return "CAPS";
-        case 0x3A: return "F1";
-        case 0x3B: return "F2";
-        case 0x3C: return "F3";
-        case 0x3D: return "F4";
-        case 0x3E: return "F5";
-        case 0x3F: return "F6";
-        case 0x40: return "F7";
-        case 0x41: return "F8";
-        case 0x42: return "F9";
-        case 0x43: return "F10";
-        case 0x44: return "F11";
-        case 0x45: return "F12";
-        case 0x49: return "INS";
-        case 0x4A: return "HOME";
-        case 0x4B: return "PGUP";
-        case 0x4C: return "DEL";
-        case 0x4D: return "END";
-        case 0x4E: return "PGDN";
-        case 0x4F: return "RGT";
-        case 0x50: return "LFT";
-        case 0x51: return "DN";
-        case 0x52: return "UP";
-        default: return NULL;
-    }
+    return key_names[layer][position];
 }
 
 static int find_best_text_size(const char* text, int max_width, int max_height) {
@@ -233,152 +134,6 @@ static void update_layer_indicators(void) {
     }
 }
 
-static void display_work_handler(struct k_work *work) {
-    if (pending_keycode == 0) return;
-    
-    uint32_t keycode = pending_keycode;
-    pending_keycode = 0;
-    
-    uint8_t modifiers = (keycode >> 24) & 0xFF;
-    uint8_t usage_page = (keycode >> 16) & 0xFF;
-    uint16_t base_keycode = keycode & 0xFFFF;
-    
-    if (usage_page != 0x07) {
-        return;
-    }
-    
-    last_key_text[0] = '\0';
-    
-    bool ctrl = (modifiers & 0x01) != 0;
-    bool shift = (modifiers & 0x02) != 0;
-    bool alt = (modifiers & 0x04) != 0;
-    bool gui = (modifiers & 0x08) != 0;
-    
-    if (gui) {
-        if (shift) {
-            switch(base_keycode) {
-                case 0x1D: strcpy(last_key_text, "CMD+SFT+Z"); break;
-                case 0x20: strcpy(last_key_text, "CMD+SFT+3"); break;
-                case 0x21: strcpy(last_key_text, "CMD+SFT+4"); break;
-                case 0x13: strcpy(last_key_text, "CMD+SFT+P"); break;
-                case 0x0F: strcpy(last_key_text, "CMD+SFT+L"); break;
-                case 0x09: strcpy(last_key_text, "CMD+SFT+F"); break;
-                case 0x08: strcpy(last_key_text, "CMD+SFT+E"); break;
-                case 0x10: strcpy(last_key_text, "CMD+SFT+M"); break;
-                default: {
-                    const char* key_name = get_key_name(base_keycode, true);
-                    if (key_name != NULL) {
-                        strcpy(last_key_text, "CMD+SFT+");
-                        strcat(last_key_text, key_name);
-                    }
-                    break;
-                }
-            }
-        } else {
-            switch(base_keycode) {
-                case 0x06: strcpy(last_key_text, "CMD+C"); break;
-                case 0x19: strcpy(last_key_text, "CMD+V"); break;
-                case 0x1B: strcpy(last_key_text, "CMD+X"); break;
-                case 0x1D: strcpy(last_key_text, "CMD+Z"); break;
-                case 0x04: strcpy(last_key_text, "CMD+A"); break;
-                case 0x16: strcpy(last_key_text, "CMD+S"); break;
-                case 0x09: strcpy(last_key_text, "CMD+F"); break;
-                case 0x0E: strcpy(last_key_text, "CMD+K"); break;
-                case 0x1E: strcpy(last_key_text, "CMD+1"); break;
-                case 0x1F: strcpy(last_key_text, "CMD+2"); break;
-                case 0x27: strcpy(last_key_text, "CMD+0"); break;
-                case 0x13: strcpy(last_key_text, "CMD+P"); break;
-                case 0x05: strcpy(last_key_text, "CMD+B"); break;
-                case 0x38: strcpy(last_key_text, "CMD+/"); break;
-                case 0x07: strcpy(last_key_text, "CMD+D"); break;
-                case 0x34: strcpy(last_key_text, "CMD+\'"); break;
-                case 0x15: strcpy(last_key_text, "CMD+R"); break;
-                case 0x18: strcpy(last_key_text, "CMD+U"); break;
-                case 0x17: strcpy(last_key_text, "CMD+T"); break;
-                case 0x0F: strcpy(last_key_text, "CMD+L"); break;
-                default: {
-                    const char* key_name = get_key_name(base_keycode, false);
-                    if (key_name != NULL) {
-                        strcpy(last_key_text, "CMD+");
-                        strcat(last_key_text, key_name);
-                    }
-                    break;
-                }
-            }
-        }
-    } else if (shift && ctrl && alt && gui) {
-        strcpy(last_key_text, "CTL+ALT+SFT+CMD+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (ctrl && alt && gui) {
-        strcpy(last_key_text, "CTL+ALT+CMD+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (shift && alt && gui) {
-        strcpy(last_key_text, "ALT+SFT+CMD+");
-        const char* key_name = get_key_name(base_keycode, true);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (shift && ctrl && gui) {
-        strcpy(last_key_text, "CTL+SFT+CMD+");
-        const char* key_name = get_key_name(base_keycode, true);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (ctrl && alt) {
-        strcpy(last_key_text, "CTL+ALT+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (shift && alt) {
-        strcpy(last_key_text, "ALT+SFT+");
-        const char* key_name = get_key_name(base_keycode, true);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (shift && ctrl) {
-        strcpy(last_key_text, "CTL+SFT+");
-        const char* key_name = get_key_name(base_keycode, true);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (alt && gui) {
-        strcpy(last_key_text, "ALT+CMD+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (ctrl && gui) {
-        strcpy(last_key_text, "CTL+CMD+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (shift && gui) {
-        strcpy(last_key_text, "SFT+CMD+");
-        const char* key_name = get_key_name(base_keycode, true);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (gui) {
-        strcpy(last_key_text, "CMD+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (shift) {
-        strcpy(last_key_text, "SFT+");
-        const char* key_name = get_key_name(base_keycode, true);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (ctrl) {
-        strcpy(last_key_text, "CTL+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else if (alt) {
-        strcpy(last_key_text, "ALT+");
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) strcat(last_key_text, key_name);
-    } else {
-        const char* key_name = get_key_name(base_keycode, false);
-        if (key_name) {
-            strcpy(last_key_text, key_name);
-        } else if (base_keycode != 0) {
-            char buf[8];
-            snprintf(buf, sizeof(buf), "0x%02X", base_keycode);
-            strcpy(last_key_text, buf);
-        }
-    }
-    
-    if (last_key_text[0] != '\0') {
-        last_key_time = k_uptime_get();
-        update_key_display();
-    }
-}
-
 static void create_ui(void) {
     if (screen == NULL) return;
     
@@ -445,16 +200,22 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
     return 0;
 }
 
-static int keycode_state_changed_cb(const zmk_event_t *eh) {
-    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
+static int position_state_changed_cb(const zmk_event_t *eh) {
+    const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
     if (ev == NULL) return 0;
     
-    uint32_t keycode = ev->keycode;
+    uint8_t position = ev->position;
     bool pressed = ev->state;
     
     if (pressed) {
-        pending_keycode = keycode;
-        k_work_schedule(&display_work, K_MSEC(20));
+        const char* key_name = get_key_name_by_position(current_layer, position);
+        
+        if (key_name != NULL) {
+            strncpy(last_key_text, key_name, sizeof(last_key_text) - 1);
+            last_key_text[sizeof(last_key_text) - 1] = '\0';
+            last_key_time = k_uptime_get();
+            update_key_display();
+        }
     }
     
     return 0;
@@ -463,15 +224,13 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
 ZMK_LISTENER(custom_status_layer, layer_state_changed_cb);
 ZMK_SUBSCRIPTION(custom_status_layer, zmk_layer_state_changed);
 
-ZMK_LISTENER(custom_status_keycode, keycode_state_changed_cb);
-ZMK_SUBSCRIPTION(custom_status_keycode, zmk_keycode_state_changed);
+ZMK_LISTENER(custom_status_position, position_state_changed_cb);
+ZMK_SUBSCRIPTION(custom_status_position, zmk_position_state_changed);
 
 lv_obj_t *zmk_display_status_screen(void) {
     if (screen == NULL) {
         screen = lv_obj_create(NULL);
         lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-        
-        k_work_init_delayable(&display_work, display_work_handler);
         
         create_ui();
         
