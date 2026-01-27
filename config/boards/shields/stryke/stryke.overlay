@@ -67,9 +67,9 @@
         };
     };
 };
+
 &i2c0 {
     status = "okay";
-    compatible = "nordic,nrf-twim";
     pinctrl-0 = <&i2c0_default>;
     pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
@@ -84,8 +84,9 @@
         page-offset = <0>;
         display-offset = <0>;
         multiplex-ratio = <63>;
-        segment-remap;
-        com-invdir;
+        segment-remap;   
+        com-invdir;      
+        
         prechargep = <0x22>;
     };
 };
@@ -93,6 +94,6 @@
 / {
     chosen {
         zephyr,display = &oled;
-        zmk,display= &oled;
+        zmk,display = &oled;
     };
 };
