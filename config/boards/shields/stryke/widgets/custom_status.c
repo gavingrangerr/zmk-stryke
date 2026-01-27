@@ -24,8 +24,8 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
-static uint8_t pending_keycode = 0;
 static struct k_work_delayable display_work;
+static struct k_work_delayable clear_modifiers_work;
 
 static bool mod_lctrl = false;
 static bool mod_lshift = false;
@@ -35,6 +35,10 @@ static bool mod_rctrl = false;
 static bool mod_rshift = false;
 static bool mod_ralt = false;
 static bool mod_rgui = false;
+
+static uint8_t last_base_key = 0;
+static int64_t last_modifier_time = 0;
+static bool waiting_for_base_key = false;
 
 static const char* get_key_name(uint32_t keycode, bool shift) {
     if (shift) {
@@ -238,19 +242,22 @@ static void update_layer_indicators(void) {
     }
 }
 
+static void clear_modifiers_handler(struct k_work *work) {
+    waiting_for_base_key = false;
+    last_base_key = 0;
+}
+
 static void display_work_handler(struct k_work *work) {
-    if (pending_keycode == 0) return;
-    
-    last_key_text[0] = '\0';
-    
     bool shift = mod_lshift || mod_rshift;
     bool ctrl = mod_lctrl || mod_rctrl;
     bool alt = mod_lalt || mod_ralt;
     bool gui = mod_lgui || mod_rgui;
     
+    last_key_text[0] = '\0';
+    
     if (gui) {
         if (shift) {
-            switch(pending_keycode) {
+            switch(last_base_key) {
                 case 0x1D: strcpy(last_key_text, "CMD+SFT+Z"); break;
                 case 0x1E: strcpy(last_key_text, "CMD+SFT+3"); break;
                 case 0x1F: strcpy(last_key_text, "CMD+SFT+4"); break;
@@ -259,35 +266,17 @@ static void display_work_handler(struct k_work *work) {
                 case 0x09: strcpy(last_key_text, "CMD+SFT+F"); break;
                 case 0x08: strcpy(last_key_text, "CMD+SFT+E"); break;
                 case 0x10: strcpy(last_key_text, "CMD+SFT+M"); break;
-                case 0x35: strcpy(last_key_text, "CMD+SFT+`"); break;
                 default: {
-                    if (pending_keycode >= 0x04 && pending_keycode <= 0x1D) {
-                        char key_name[12];
-                        strcpy(key_name, "CMD+SFT+");
-                        const char* key = get_key_name(pending_keycode, true);
-                        if (key) strcat(key_name, key);
-                        strcpy(last_key_text, key_name);
-                    } else {
-                        char key_name[16];
-                        strcpy(key_name, "CMD+SFT+");
-                        const char* key = get_key_name(pending_keycode, true);
-                        if (key) {
-                            strcat(key_name, key);
-                        } else {
-                            const char* fallback = get_key_name(pending_keycode, false);
-                            if (fallback) {
-                                strcat(key_name, fallback);
-                            } else {
-                                strcat(key_name, "?");
-                            }
-                        }
-                        strcpy(last_key_text, key_name);
+                    const char* key_name = get_key_name(last_base_key, true);
+                    if (key_name != NULL) {
+                        strcpy(last_key_text, "CMD+SFT+");
+                        strcat(last_key_text, key_name);
                     }
                     break;
                 }
             }
         } else {
-            switch(pending_keycode) {
+            switch(last_base_key) {
                 case 0x06: strcpy(last_key_text, "CMD+C"); break;
                 case 0x19: strcpy(last_key_text, "CMD+V"); break;
                 case 0x1B: strcpy(last_key_text, "CMD+X"); break;
@@ -309,7 +298,7 @@ static void display_work_handler(struct k_work *work) {
                 case 0x17: strcpy(last_key_text, "CMD+T"); break;
                 case 0x0F: strcpy(last_key_text, "CMD+L"); break;
                 default: {
-                    const char* key_name = get_key_name(pending_keycode, false);
+                    const char* key_name = get_key_name(last_base_key, false);
                     if (key_name != NULL) {
                         strcpy(last_key_text, "CMD+");
                         strcat(last_key_text, key_name);
@@ -318,65 +307,78 @@ static void display_work_handler(struct k_work *work) {
                 }
             }
         }
-        
-        if (last_key_text[0] != '\0') {
-            last_key_time = k_uptime_get();
-            update_key_display();
-            pending_keycode = 0;
-            return;
-        }
-    }
-    
-    if (shift && ctrl && alt && gui) {
+    } else if (shift && ctrl && alt && gui) {
         strcpy(last_key_text, "CTL+ALT+SFT+CMD+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (ctrl && alt && gui) {
         strcpy(last_key_text, "CTL+ALT+CMD+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (shift && alt && gui) {
         strcpy(last_key_text, "ALT+SFT+CMD+");
+        const char* key_name = get_key_name(last_base_key, true);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (shift && ctrl && gui) {
         strcpy(last_key_text, "CTL+SFT+CMD+");
+        const char* key_name = get_key_name(last_base_key, true);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (ctrl && alt) {
         strcpy(last_key_text, "CTL+ALT+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (shift && alt) {
         strcpy(last_key_text, "ALT+SFT+");
+        const char* key_name = get_key_name(last_base_key, true);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (shift && ctrl) {
         strcpy(last_key_text, "CTL+SFT+");
+        const char* key_name = get_key_name(last_base_key, true);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (alt && gui) {
         strcpy(last_key_text, "ALT+CMD+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (ctrl && gui) {
         strcpy(last_key_text, "CTL+CMD+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (shift && gui) {
         strcpy(last_key_text, "SFT+CMD+");
+        const char* key_name = get_key_name(last_base_key, true);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (gui) {
         strcpy(last_key_text, "CMD+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (shift) {
         strcpy(last_key_text, "SFT+");
+        const char* key_name = get_key_name(last_base_key, true);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (ctrl) {
         strcpy(last_key_text, "CTL+");
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else if (alt) {
         strcpy(last_key_text, "ALT+");
-    }
-    
-    const char* key_name = get_key_name(pending_keycode, shift && !gui && !ctrl && !alt);
-    if (key_name != NULL) {
-        if (last_key_text[0] != '\0') {
-            strcat(last_key_text, key_name);
-        } else {
-            strcpy(last_key_text, key_name);
-        }
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) strcat(last_key_text, key_name);
     } else {
-        char buf[8];
-        snprintf(buf, sizeof(buf), "0x%02X", pending_keycode);
-        if (last_key_text[0] != '\0') {
-            strcat(last_key_text, buf);
-        } else {
+        const char* key_name = get_key_name(last_base_key, false);
+        if (key_name) {
+            strcpy(last_key_text, key_name);
+        } else if (last_base_key != 0) {
+            char buf[8];
+            snprintf(buf, sizeof(buf), "0x%02X", last_base_key);
             strcpy(last_key_text, buf);
         }
     }
     
     last_key_time = k_uptime_get();
     update_key_display();
-    pending_keycode = 0;
+    
+    waiting_for_base_key = false;
+    last_base_key = 0;
 }
 
 static void create_ui(void) {
@@ -453,19 +455,35 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     bool pressed = ev->state;
     
     switch(keycode) {
-        case 0xE0: mod_lctrl = pressed; return 0;
-        case 0xE1: mod_lshift = pressed; return 0;
-        case 0xE2: mod_lalt = pressed; return 0;
-        case 0xE3: mod_lgui = pressed; return 0;
-        case 0xE4: mod_rctrl = pressed; return 0;
-        case 0xE5: mod_rshift = pressed; return 0;
-        case 0xE6: mod_ralt = pressed; return 0;
-        case 0xE7: mod_rgui = pressed; return 0;
+        case 0xE0: mod_lctrl = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE1: mod_lshift = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE2: mod_lalt = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE3: mod_lgui = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE4: mod_rctrl = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE5: mod_rshift = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE6: mod_ralt = pressed; last_modifier_time = k_uptime_get(); return 0;
+        case 0xE7: mod_rgui = pressed; last_modifier_time = k_uptime_get(); return 0;
     }
     
     if (pressed && keycode >= 0x04 && keycode <= 0x52) {
-        pending_keycode = keycode;
-        k_work_schedule(&display_work, K_MSEC(20));
+        bool has_modifiers = mod_lctrl || mod_rctrl || mod_lshift || mod_rshift || 
+                             mod_lalt || mod_ralt || mod_lgui || mod_rgui;
+        
+        if (has_modifiers) {
+            // We have modifiers, wait a bit to see if more modifiers are coming
+            waiting_for_base_key = true;
+            last_base_key = keycode;
+            
+            // Schedule display update with a small delay to capture all modifiers
+            k_work_schedule(&display_work, K_MSEC(30));
+        } else {
+            // No modifiers, just display the key
+            last_base_key = keycode;
+            k_work_schedule(&display_work, K_MSEC(20));
+        }
+        
+        // Clear modifiers after a delay
+        k_work_schedule(&clear_modifiers_work, K_MSEC(100));
     }
     
     return 0;
@@ -483,6 +501,7 @@ lv_obj_t *zmk_display_status_screen(void) {
         lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
         
         k_work_init_delayable(&display_work, display_work_handler);
+        k_work_init_delayable(&clear_modifiers_work, clear_modifiers_handler);
         
         create_ui();
         
