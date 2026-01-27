@@ -24,7 +24,9 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
-// Track modifiers explicitly
+static uint8_t pending_keycode = 0;
+static struct k_work_delayable display_work;
+
 static bool mod_lctrl = false;
 static bool mod_lshift = false;
 static bool mod_lalt = false;
@@ -184,6 +186,40 @@ static void update_layer_indicators(void) {
     }
 }
 
+static void display_work_handler(struct k_work *work) {
+    if (pending_keycode == 0) return;
+    
+    last_key_text[0] = '\0';
+    
+    // Check modifier state at display time
+    if (mod_lgui || mod_rgui) {
+        strcat(last_key_text, "CMD+");
+    }
+    if (mod_lshift || mod_rshift) {
+        strcat(last_key_text, "SFT+");
+    }
+    if (mod_lctrl || mod_rctrl) {
+        strcat(last_key_text, "CTL+");
+    }
+    if (mod_lalt || mod_ralt) {
+        strcat(last_key_text, "ALT+");
+    }
+    
+    const char* key_name = get_key_name(pending_keycode);
+    if (key_name != NULL) {
+        strcat(last_key_text, key_name);
+    } else {
+        char buf[8];
+        snprintf(buf, sizeof(buf), "0x%02X", pending_keycode);
+        strcat(last_key_text, buf);
+    }
+    
+    last_key_time = k_uptime_get();
+    update_key_display();
+    
+    pending_keycode = 0;
+}
+
 static void create_ui(void) {
     if (screen == NULL) return;
     
@@ -257,7 +293,7 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     uint8_t keycode = ev->keycode;
     bool pressed = ev->state;
     
-    // Track modifier keys explicitly
+    // Track modifier keys
     switch(keycode) {
         case 0xE0: mod_lctrl = pressed; return 0;
         case 0xE1: mod_lshift = pressed; return 0;
@@ -269,34 +305,10 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
         case 0xE7: mod_rgui = pressed; return 0;
     }
     
-    // Build display string when regular key is pressed
+    // Schedule display update with 10ms delay to ensure modifiers are registered
     if (pressed && keycode >= 0x04 && keycode <= 0x52) {
-        last_key_text[0] = '\0';
-        
-        if (mod_lgui || mod_rgui) {
-            strcat(last_key_text, "CMD+");
-        }
-        if (mod_lshift || mod_rshift) {
-            strcat(last_key_text, "SFT+");
-        }
-        if (mod_lctrl || mod_rctrl) {
-            strcat(last_key_text, "CTL+");
-        }
-        if (mod_lalt || mod_ralt) {
-            strcat(last_key_text, "ALT+");
-        }
-        
-        const char* key_name = get_key_name(keycode);
-        if (key_name != NULL) {
-            strcat(last_key_text, key_name);
-        } else {
-            char buf[8];
-            snprintf(buf, sizeof(buf), "0x%02X", keycode);
-            strcat(last_key_text, buf);
-        }
-        
-        last_key_time = k_uptime_get();
-        update_key_display();
+        pending_keycode = keycode;
+        k_work_schedule(&display_work, K_MSEC(10));
     }
     
     return 0;
@@ -312,6 +324,8 @@ lv_obj_t *zmk_display_status_screen(void) {
     if (screen == NULL) {
         screen = lv_obj_create(NULL);
         lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+        
+        k_work_init_delayable(&display_work, display_work_handler);
         
         create_ui();
         
