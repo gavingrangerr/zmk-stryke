@@ -10,13 +10,11 @@
 extern "C" {
 #endif
 
-// Screen configuration
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define CARD_HEIGHT 36
 #define MAX_TEXT_HEIGHT 16
 
-// UI state
 static lv_obj_t *screen = NULL;
 static lv_obj_t *key_card = NULL;
 static lv_obj_t *key_label = NULL;
@@ -26,15 +24,12 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
-// Modifier state tracking
 static bool lgui_active = false;
 static bool lshift_active = false;
 static bool lctrl_active = false;
 static bool lalt_active = false;
 
-// Key code to string mapping (simplified - extend as needed)
 static const char* get_key_name(uint32_t keycode) {
-    // HID usage codes to key names
     switch(keycode) {
         case 0x04: return "A";
         case 0x05: return "B";
@@ -111,31 +106,18 @@ static const char* get_key_name(uint32_t keycode) {
         case 0x50: return "LFT";
         case 0x51: return "DN";
         case 0x52: return "UP";
-        case 0xE0: return "CTL";
-        case 0xE1: return "SFT";
-        case 0xE2: return "ALT";
-        case 0xE3: return "GUI";
-        case 0xE4: return "CTL";
-        case 0xE5: return "SFT";
-        case 0xE6: return "ALT";
-        case 0xE7: return "GUI";
         default: return NULL;
     }
 }
 
-// Build display string with modifiers
 static void build_key_display(uint32_t keycode) {
     const char* key_name = get_key_name(keycode);
-    
-    // Don't display if key name not found
     if (key_name == NULL) {
         return;
     }
     
-    // Reset buffer
     last_key_text[0] = '\0';
     
-    // Build modifier string
     if (lgui_active) {
         strcat(last_key_text, "CMD+");
     }
@@ -149,18 +131,13 @@ static void build_key_display(uint32_t keycode) {
         strcat(last_key_text, "ALT+");
     }
     
-    // Add the key name
     strcat(last_key_text, key_name);
-    
-    // Update timestamp
     last_key_time = k_uptime_get();
 }
 
-// Find best text size that fits within constraints
 static int find_best_text_size(const char* text, int max_width, int max_height) {
     int text_len = strlen(text);
     
-    // Try sizes from 3 down to 1 (LVGL font sizes)
     for (int size = 3; size >= 1; size--) {
         int char_width = (size == 3) ? 16 : (size == 2) ? 12 : 8;
         int char_height = (size == 3) ? 24 : (size == 2) ? 16 : 8;
@@ -173,10 +150,9 @@ static int find_best_text_size(const char* text, int max_width, int max_height) 
         }
     }
     
-    return 1; // Smallest size
+    return 1;
 }
 
-// Get LVGL font for size
 static const lv_font_t* get_font_for_size(int size) {
     if (size >= 3) {
         return &lv_font_montserrat_20;
@@ -187,38 +163,30 @@ static const lv_font_t* get_font_for_size(int size) {
     }
 }
 
-// Update the key display card
 static void update_key_display(void) {
     if (key_label == NULL) return;
     
-    // Update the label text
     lv_label_set_text(key_label, last_key_text);
     
-    // Find best text size
     int best_size = find_best_text_size(last_key_text, 116, MAX_TEXT_HEIGHT);
     const lv_font_t* font = get_font_for_size(best_size);
     lv_obj_set_style_text_font(key_label, font, LV_PART_MAIN);
     
-    // Check if key press is fresh (within 200ms for press animation)
     int64_t now = k_uptime_get();
     bool fresh_press = (now - last_key_time) < 200;
     
     if (fresh_press) {
-        // Inverted colors for fresh press
         lv_obj_set_style_bg_color(key_label, lv_color_white(), LV_PART_MAIN);
         lv_obj_set_style_bg_opa(key_label, LV_OPA_COVER, LV_PART_MAIN);
         lv_obj_set_style_text_color(key_label, lv_color_black(), LV_PART_MAIN);
     } else {
-        // Normal colors
         lv_obj_set_style_bg_opa(key_label, LV_OPA_TRANSP, LV_PART_MAIN);
         lv_obj_set_style_text_color(key_label, lv_color_white(), LV_PART_MAIN);
     }
     
-    // Center the label
     lv_obj_center(key_label);
 }
 
-// Update layer indicators
 static void update_layer_indicators(void) {
     for (int i = 0; i < 5; i++) {
         if (layer_indicators[i] == NULL) continue;
@@ -226,30 +194,24 @@ static void update_layer_indicators(void) {
         lv_obj_t* label = lv_obj_get_child(layer_indicators[i], 0);
         
         if (i == current_layer) {
-            // Active layer - filled
             lv_obj_set_style_bg_color(layer_indicators[i], lv_color_white(), LV_PART_MAIN);
             lv_obj_set_style_bg_opa(layer_indicators[i], LV_OPA_COVER, LV_PART_MAIN);
             lv_obj_set_style_text_color(label, lv_color_black(), LV_PART_MAIN);
         } else {
-            // Inactive layer - outline only
             lv_obj_set_style_bg_opa(layer_indicators[i], LV_OPA_TRANSP, LV_PART_MAIN);
             lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
         }
     }
 }
 
-// Create the main UI
 static void create_ui(void) {
     if (screen == NULL) return;
     
-    // Clear screen
     lv_obj_clean(screen);
     
-    // Set black background
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
-    // === KEY DISPLAY CARD ===
     key_card = lv_obj_create(screen);
     lv_obj_set_size(key_card, 124, CARD_HEIGHT);
     lv_obj_set_pos(key_card, 2, 2);
@@ -259,14 +221,12 @@ static void create_ui(void) {
     lv_obj_set_style_radius(key_card, 8, LV_PART_MAIN);
     lv_obj_set_style_pad_all(key_card, 0, LV_PART_MAIN);
     
-    // Key label inside card
     key_label = lv_label_create(key_card);
     lv_label_set_text(key_label, last_key_text);
     lv_obj_set_style_text_color(key_label, lv_color_white(), LV_PART_MAIN);
     lv_obj_set_style_text_font(key_label, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_center(key_label);
     
-    // === LAYER INDICATORS ===
     int indicator_y = 46;
     int indicator_spacing = 25;
     int start_x = 4;
@@ -274,7 +234,6 @@ static void create_ui(void) {
     for (int i = 0; i < 5; i++) {
         int x = start_x + (i * indicator_spacing);
         
-        // Create indicator container
         layer_indicators[i] = lv_obj_create(screen);
         lv_obj_set_size(layer_indicators[i], 22, 12);
         lv_obj_set_pos(layer_indicators[i], x, indicator_y);
@@ -283,7 +242,6 @@ static void create_ui(void) {
         lv_obj_set_style_border_width(layer_indicators[i], 1, LV_PART_MAIN);
         lv_obj_set_style_pad_all(layer_indicators[i], 0, LV_PART_MAIN);
         
-        // Create label inside indicator
         lv_obj_t* label = lv_label_create(layer_indicators[i]);
         char layer_text[4];
         snprintf(layer_text, sizeof(layer_text), "L%d", i);
@@ -292,30 +250,26 @@ static void create_ui(void) {
         lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     }
     
-    // Initial update
     update_layer_indicators();
     update_key_display();
 }
 
-// Animation timer callback
 static void animation_timer_cb(lv_timer_t* timer) {
     update_key_display();
 }
 
-// Layer state change event handler
 static int layer_state_changed_cb(const zmk_event_t *eh) {
     const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
     if (ev == NULL) return 0;
     
     current_layer = zmk_keymap_highest_layer_active();
-    if (current_layer > 4) current_layer = 4; // Cap at 5 layers
+    if (current_layer > 4) current_layer = 4;
     
     update_layer_indicators();
     
     return 0;
 }
 
-// Keycode state change event handler
 static int keycode_state_changed_cb(const zmk_event_t *eh) {
     const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
     if (ev == NULL) return 0;
@@ -323,8 +277,54 @@ static int keycode_state_changed_cb(const zmk_event_t *eh) {
     uint32_t keycode = ev->keycode;
     bool pressed = ev->state;
     
-    // Track modifier states
-    if (keycode == 0xE0 || keycode == 0xE4) { // Left/Right Ctrl
+    if (keycode == 0xE0 || keycode == 0xE4) {
         lctrl_active = pressed;
-        return 0; // Don't display modifiers alone
+        return 0;
     }
+    if (keycode == 0xE1 || keycode == 0xE5) {
+        lshift_active = pressed;
+        return 0;
+    }
+    if (keycode == 0xE2 || keycode == 0xE6) {
+        lalt_active = pressed;
+        return 0;
+    }
+    if (keycode == 0xE3 || keycode == 0xE7) {
+        lgui_active = pressed;
+        return 0;
+    }
+    
+    if (!pressed) return 0;
+    
+    build_key_display(keycode);
+    update_key_display();
+    
+    return 0;
+}
+
+ZMK_LISTENER(custom_status_layer, layer_state_changed_cb);
+ZMK_SUBSCRIPTION(custom_status_layer, zmk_layer_state_changed);
+
+ZMK_LISTENER(custom_status_keycode, keycode_state_changed_cb);
+ZMK_SUBSCRIPTION(custom_status_keycode, zmk_keycode_state_changed);
+
+lv_obj_t *zmk_display_status_screen(void) {
+    if (screen == NULL) {
+        screen = lv_obj_create(NULL);
+        lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+        
+        create_ui();
+        
+        lv_timer_create(animation_timer_cb, 50, NULL);
+        
+        current_layer = zmk_keymap_highest_layer_active();
+        if (current_layer > 4) current_layer = 4;
+        update_layer_indicators();
+    }
+    
+    return screen;
+}
+
+#ifdef __cplusplus
+}
+#endif
