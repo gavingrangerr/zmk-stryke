@@ -50,16 +50,6 @@
     };
 };
 
-/ {
-    regulator_vcc: regulator_vcc {
-        compatible = "regulator-fixed";
-        label = "VCC_EN";
-        regulator-name = "VCC_EN";
-        enable-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
-        regulator-always-on;
-    };
-};
-
 &pinctrl {
     i2c0_default: i2c0_default {
         group1 {
@@ -103,5 +93,6 @@
 / {
     chosen {
         zephyr,display = &oled;
+        zmk,display= &oled;
     };
 };
