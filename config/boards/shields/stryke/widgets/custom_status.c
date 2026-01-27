@@ -259,11 +259,29 @@ static void display_work_handler(struct k_work *work) {
                 case 0x09: strcpy(last_key_text, "CMD+SFT+F"); break;
                 case 0x08: strcpy(last_key_text, "CMD+SFT+E"); break;
                 case 0x10: strcpy(last_key_text, "CMD+SFT+M"); break;
+                case 0x35: strcpy(last_key_text, "CMD+SFT+`"); break;
                 default: {
-                    const char* key_name = get_key_name(pending_keycode, true);
-                    if (key_name != NULL) {
-                        strcpy(last_key_text, "CMD+SFT+");
-                        strcat(last_key_text, key_name);
+                    if (pending_keycode >= 0x04 && pending_keycode <= 0x1D) {
+                        char key_name[12];
+                        strcpy(key_name, "CMD+SFT+");
+                        const char* key = get_key_name(pending_keycode, true);
+                        if (key) strcat(key_name, key);
+                        strcpy(last_key_text, key_name);
+                    } else {
+                        char key_name[16];
+                        strcpy(key_name, "CMD+SFT+");
+                        const char* key = get_key_name(pending_keycode, true);
+                        if (key) {
+                            strcat(key_name, key);
+                        } else {
+                            const char* fallback = get_key_name(pending_keycode, false);
+                            if (fallback) {
+                                strcat(key_name, fallback);
+                            } else {
+                                strcat(key_name, "?");
+                            }
+                        }
+                        strcpy(last_key_text, key_name);
                     }
                     break;
                 }
@@ -283,9 +301,9 @@ static void display_work_handler(struct k_work *work) {
                 case 0x27: strcpy(last_key_text, "CMD+0"); break;
                 case 0x13: strcpy(last_key_text, "CMD+P"); break;
                 case 0x05: strcpy(last_key_text, "CMD+B"); break;
-                case 0x38: strcpy(last_key_text, "CMD+SLASH"); break;
+                case 0x38: strcpy(last_key_text, "CMD+/"); break;
                 case 0x07: strcpy(last_key_text, "CMD+D"); break;
-                case 0x34: strcpy(last_key_text, "CMD+QUOTE"); break;
+                case 0x34: strcpy(last_key_text, "CMD+\'"); break;
                 case 0x15: strcpy(last_key_text, "CMD+R"); break;
                 case 0x18: strcpy(last_key_text, "CMD+U"); break;
                 case 0x17: strcpy(last_key_text, "CMD+T"); break;
@@ -309,31 +327,55 @@ static void display_work_handler(struct k_work *work) {
         }
     }
     
-    if (gui) {
-        strcat(last_key_text, "CMD+");
-    }
-    if (shift && (gui || ctrl || alt)) {
-        strcat(last_key_text, "SFT+");
-    }
-    if (ctrl) {
-        strcat(last_key_text, "CTL+");
-    }
-    if (alt) {
-        strcat(last_key_text, "ALT+");
+    if (shift && ctrl && alt && gui) {
+        strcpy(last_key_text, "CTL+ALT+SFT+CMD+");
+    } else if (ctrl && alt && gui) {
+        strcpy(last_key_text, "CTL+ALT+CMD+");
+    } else if (shift && alt && gui) {
+        strcpy(last_key_text, "ALT+SFT+CMD+");
+    } else if (shift && ctrl && gui) {
+        strcpy(last_key_text, "CTL+SFT+CMD+");
+    } else if (ctrl && alt) {
+        strcpy(last_key_text, "CTL+ALT+");
+    } else if (shift && alt) {
+        strcpy(last_key_text, "ALT+SFT+");
+    } else if (shift && ctrl) {
+        strcpy(last_key_text, "CTL+SFT+");
+    } else if (alt && gui) {
+        strcpy(last_key_text, "ALT+CMD+");
+    } else if (ctrl && gui) {
+        strcpy(last_key_text, "CTL+CMD+");
+    } else if (shift && gui) {
+        strcpy(last_key_text, "SFT+CMD+");
+    } else if (gui) {
+        strcpy(last_key_text, "CMD+");
+    } else if (shift) {
+        strcpy(last_key_text, "SFT+");
+    } else if (ctrl) {
+        strcpy(last_key_text, "CTL+");
+    } else if (alt) {
+        strcpy(last_key_text, "ALT+");
     }
     
     const char* key_name = get_key_name(pending_keycode, shift && !gui && !ctrl && !alt);
     if (key_name != NULL) {
-        strcat(last_key_text, key_name);
+        if (last_key_text[0] != '\0') {
+            strcat(last_key_text, key_name);
+        } else {
+            strcpy(last_key_text, key_name);
+        }
     } else {
         char buf[8];
         snprintf(buf, sizeof(buf), "0x%02X", pending_keycode);
-        strcat(last_key_text, buf);
+        if (last_key_text[0] != '\0') {
+            strcat(last_key_text, buf);
+        } else {
+            strcpy(last_key_text, buf);
+        }
     }
     
     last_key_time = k_uptime_get();
     update_key_display();
-    
     pending_keycode = 0;
 }
 
