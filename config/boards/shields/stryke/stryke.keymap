@@ -8,7 +8,7 @@
 
         base_layer {
             label = "Base";
-            bindings = 
+            bindings = <
                 &kp LG(C)       &kp LG(V)       &kp LG(X)       &kp LG(Z)
                 &kp LG(A)       &kp LG(S)       &kp LG(F)       &kp LG(LS(Z))
                 &kp LG(LS(N3))  &kp LG(LS(N4))  &bootloader     &tog 1
@@ -17,7 +17,7 @@
 
         kicad_layer {
             label = "KiCad";
-            bindings = 
+            bindings = <
                 &kp R           &kp M           &kp G           &kp DEL
                 &kp V           &kp E           &kp X           &kp W
                 &kp B           &kp F           &kp H           &tog 2
@@ -26,7 +26,7 @@
         
         fusion_layer {
             label = "Fusion";
-            bindings = 
+            bindings = <
                 &kp LG(K)       &kp R           &kp L           &kp D
                 &kp E           &kp Q           &kp F           &kp LG(Z)
                 &kp LG(N1)      &kp LG(N2)      &kp LG(N0)      &tog 3
@@ -35,7 +35,7 @@
 
         vscode_layer {
             label = "VS-Code";
-            bindings = 
+            bindings = <
                 &kp LG(P)       &kp LS(LG(P))   &kp LG(B)       &kp LG(FSLH)
                 &kp LG(D)       &kp LS(LG(L))   &kp LG(F)       &kp LG(Z)
                 &kp LG(SQT)     &kp LS(LG(F))   &kp LS(LG(E))   &tog 4
@@ -44,7 +44,7 @@
 
         arduino_layer {
             label = "Arduino";
-            bindings = 
+            bindings = <
                 &kp LG(R)       &kp LG(U)       &kp LS(LG(M))   &kp LG(K)
                 &kp LG(T)       &kp LG(Z)       &kp LG(L)       &kp LG(S)
                 &bt BT_CLR      &bt BT_NXT      &sys_reset      &to 0
