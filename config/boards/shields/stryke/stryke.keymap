@@ -4,7 +4,6 @@
 
 / {
     macros {
-        // Base Layer
         cmd_c: cmd_c {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -75,7 +74,6 @@
             label = "CMD+SFT+4";
         };
         
-        // Fusion Layer
         cmd_k: cmd_k {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -104,7 +102,6 @@
             label = "CMD+0";
         };
         
-        // VS-Code Layer
         cmd_p: cmd_p {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -168,7 +165,6 @@
             label = "CMD+SFT+E";
         };
         
-        // Arduino Layer
         cmd_r: cmd_r {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
