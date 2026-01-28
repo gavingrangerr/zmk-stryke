@@ -28,9 +28,9 @@ static int64_t last_key_time = 0;
 
 static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
     {
-        "CMD+C",        "CMD+V",        "CMD+X",        "CMD+Z",
-        "CMD+A",        "CMD+S",        "CMD+F",        "CMD+SHFT+Z",
-        "CMD+SHFT+3",   "CMD+SHFT+4",   "Bootloader",   "KiCad"
+        "⌘C",           "⌘V",           "⌘X",           "⌘Z",
+        "⌘A",           "⌘S",           "⌘F",           "⌘⇧Z",
+        "⌘⇧3",          "⌘⇧4",          "Boot",         "KiCad"
     },
     {
         "R",            "M",            "G",            "DEL",
@@ -38,19 +38,19 @@ static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
         "B",            "F",            "H",            "Fusion"
     },
     {
-        "Cmd+K",        "R",            "L",            "D",
-        "E",            "Q",            "F",            "CMD+Z",
-        "CMD+1",        "CMD+2",        "CMD+0",        "VS Code"
+        "⌘K",           "R",            "L",            "D",
+        "E",            "Q",            "F",            "⌘Z",
+        "⌘1",           "⌘2",           "⌘0",           "VSCode"
     },
     {
-        "Cmd+P",        "CMD+SHFT+P",   "CMD+B",        "CMD+FSLH",
-        "CMD+D",        "CMD+SHFT+L",   "CMD+F",        "CMD+Z",
-        "CMD+SQRT",     "CMD+SHFT+F",   "CMD+SHFT+E",   "Arduino"
+        "⌘P",           "⌘⇧P",          "⌘B",           "⌘/",
+        "⌘D",           "⌘⇧L",          "⌘F",           "⌘Z",
+        "⌘`",           "⌘⇧F",          "⌘⇧E",          "Arduino"
     },
     {
-        "CMD+R",        "CMD+U",        "CMD+SHFT+M",   "CMD+K",
-        "CMD+T",        "CMD+Z",        "CMD+L",        "CMD+S",
-        "BT Clear",     "BT Next",      "Reset",        "Base"
+        "⌘R",           "⌘U",           "⌘⇧M",          "⌘K",
+        "⌘T",           "⌘Z",           "⌘L",           "⌘S",
+        "BT CLR",       "BT NXT",       "Reset",        "Base"
     }
 };
 
