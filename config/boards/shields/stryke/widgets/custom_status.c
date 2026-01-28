@@ -121,15 +121,15 @@ static void update_layer_indicators(void) {
     for (int i = 0; i < 5; i++) {
         if (layer_indicators[i] == NULL) continue;
         
+        lv_obj_t* label = lv_obj_get_child(layer_indicators[i], 0);
+        
         if (i == current_layer) {
             lv_obj_set_style_bg_color(layer_indicators[i], lv_color_white(), LV_PART_MAIN);
             lv_obj_set_style_bg_opa(layer_indicators[i], LV_OPA_COVER, LV_PART_MAIN);
-            lv_obj_set_style_border_color(layer_indicators[i], lv_color_white(), LV_PART_MAIN);
-            lv_obj_set_style_border_width(layer_indicators[i], 1, LV_PART_MAIN);
+            lv_obj_set_style_text_color(label, lv_color_black(), LV_PART_MAIN);
         } else {
             lv_obj_set_style_bg_opa(layer_indicators[i], LV_OPA_TRANSP, LV_PART_MAIN);
-            lv_obj_set_style_border_color(layer_indicators[i], lv_color_white(), LV_PART_MAIN);
-            lv_obj_set_style_border_width(layer_indicators[i], 1, LV_PART_MAIN);
+            lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
         }
     }
 }
@@ -165,19 +165,18 @@ static void create_ui(void) {
         int x = start_x + (i * indicator_spacing);
         
         layer_indicators[i] = lv_obj_create(screen);
-        lv_obj_set_size(layer_indicators[i], 16, 16);
+        lv_obj_set_size(layer_indicators[i], 22, 12);
         lv_obj_set_pos(layer_indicators[i], x, indicator_y);
-        lv_obj_set_style_radius(layer_indicators[i], LV_RADIUS_CIRCLE, LV_PART_MAIN);
+        lv_obj_set_style_radius(layer_indicators[i], 2, LV_PART_MAIN);
         lv_obj_set_style_border_color(layer_indicators[i], lv_color_white(), LV_PART_MAIN);
         lv_obj_set_style_border_width(layer_indicators[i], 1, LV_PART_MAIN);
         lv_obj_set_style_pad_all(layer_indicators[i], 0, LV_PART_MAIN);
         
         lv_obj_t* label = lv_label_create(layer_indicators[i]);
         char layer_text[4];
-        snprintf(layer_text, sizeof(layer_text), "%d", i + 1);
+        snprintf(layer_text, sizeof(layer_text), "L%d", i);
         lv_label_set_text(label, layer_text);
         lv_obj_set_style_text_font(label, &lv_font_montserrat_10, LV_PART_MAIN);
-        lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     }
     
