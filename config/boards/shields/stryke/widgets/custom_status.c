@@ -21,15 +21,19 @@ static lv_obj_t *screen = NULL;
 static lv_obj_t *key_card = NULL;
 static lv_obj_t *key_label = NULL;
 static lv_obj_t *layer_indicators[5];
+static lv_obj_t *user_label = NULL;
+static lv_obj_t *time_label = NULL;
 
 static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
+static char time_str[10] = "00:00";
+static const char* user_name = "Gavin G.";
 
 static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
     {
         "CMD+C",        "CMD+V",        "CMD+X",        "CMD+Z",
-        "CMD+A",        "CMD+S",        "CMD+F",        "CMD+SHFT+Z",
+        "CMD+A",        "CMD+S",        "SIGNOUT",      "EMAIL",
         "CMD+SHFT+3",   "CMD+SHFT+4",   "Bootloader",   "KiCad"
     },
     {
@@ -53,6 +57,31 @@ static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
         "BT Clear",     "BT Next",      "Reset",        "Base"
     }
 };
+
+static void update_time_display(void) {
+    if (time_label == NULL) return;
+    // Get current UTC time
+    int64_t uptime_ms = k_uptime_get();
+    int64_t system_time_ms = uptime_ms + CONFIG_SYS_CLOCK_TICKS_PER_SEC;
+    // Convert to Eastern Standard Time (UTC-5)
+    int64_t est_ms = system_time_ms - (5 * 3600 * 1000);
+    // Calculate hours, minutes
+    int total_seconds = (est_ms / 1000) % 86400;
+    int hours = total_seconds / 3600;
+    int minutes = (total_seconds % 3600) / 60;
+    // Convert to 12-hour format and determine AM/PM
+    int hour_12 = hours % 12;
+    if (hour_12 == 0) hour_12 = 12;
+    const char* am_pm = (hours >= 12) ? "pm" : "am";
+    // Format time string - no leading zero for single-digit hours
+    if (hour_12 >= 10) {
+        snprintf(time_str, sizeof(time_str), "%d:%02d%s", hour_12, minutes, am_pm);
+    } else {
+        snprintf(time_str, sizeof(time_str), "%d:%02d%s", hour_12, minutes, am_pm);
+    }
+    
+    lv_label_set_text(time_label, time_str);
+}
 
 static const char* get_key_name_by_position(uint8_t layer, uint8_t position) {
     if (layer >= MAX_LAYERS || position >= MAX_POSITIONS) {
@@ -142,9 +171,24 @@ static void create_ui(void) {
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
+    // User label (top left)
+    user_label = lv_label_create(screen);
+    lv_label_set_text(user_label, user_name);
+    lv_obj_set_style_text_color(user_label, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_text_font(user_label, &lv_font_montserrat_10, LV_PART_MAIN);
+    lv_obj_align(user_label, LV_ALIGN_TOP_LEFT, 4, 4);
+    
+    // Time label (top right)
+    time_label = lv_label_create(screen);
+    update_time_display();
+    lv_obj_set_style_text_color(time_label, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_text_font(time_label, &lv_font_montserrat_10, LV_PART_MAIN);
+    lv_obj_align(time_label, LV_ALIGN_TOP_RIGHT, -4, 4);
+    
+    // Key card (positioned below user/time labels)
     key_card = lv_obj_create(screen);
     lv_obj_set_size(key_card, 124, CARD_HEIGHT);
-    lv_obj_set_pos(key_card, 2, 2);
+    lv_obj_set_pos(key_card, 2, 20); // Moved down from 2 to 20 to make room for user/time
     lv_obj_set_style_bg_opa(key_card, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_color(key_card, lv_color_white(), LV_PART_MAIN);
     lv_obj_set_style_border_width(key_card, 2, LV_PART_MAIN);
@@ -157,7 +201,7 @@ static void create_ui(void) {
     lv_obj_set_style_text_font(key_label, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_center(key_label);
     
-    int indicator_y = 46;
+    int indicator_y = 58; // Moved from 46 to 58 to make room for everything
     int indicator_spacing = 25;
     int start_x = 4;
     
@@ -186,6 +230,7 @@ static void create_ui(void) {
 
 static void animation_timer_cb(lv_timer_t* timer) {
     update_key_display();
+    update_time_display();
 }
 
 static int layer_state_changed_cb(const zmk_event_t *eh) {
