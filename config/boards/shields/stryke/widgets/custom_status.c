@@ -300,11 +300,10 @@ static void create_custom_background(void) {
     bg_canvas = lv_canvas_create(screen);
     lv_obj_set_size(bg_canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_obj_move_to_index(bg_canvas, 0);
-    
     static lv_color_t bg_buf[SCREEN_WIDTH * SCREEN_HEIGHT];
     lv_canvas_set_buffer(bg_canvas, bg_buf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
     lv_canvas_fill_bg(bg_canvas, lv_color_black(), LV_OPA_COVER);
-    
+
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             int byte_index = (y * SCREEN_WIDTH + x) / 8;
@@ -312,7 +311,7 @@ static void create_custom_background(void) {
             
             if (byte_index < sizeof(custom_background)) {
                 if (custom_background[byte_index] & (1 << bit_index)) {
-                    lv_canvas_set_px_color(bg_canvas, x, y, lv_color_make(30, 30, 30));
+                    lv_canvas_set_px_color(bg_canvas, x, y, lv_color_white());
                 }
             }
         }
