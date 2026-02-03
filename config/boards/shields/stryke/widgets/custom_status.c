@@ -29,8 +29,6 @@ static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
 
-// Org_01 bitmap font data (5 pixels height, variable width)
-// Format: packed bits, left to right, top to bottom
 static const uint8_t org_01_bitmaps[] = {
     // '0' - 5 wide
     0xFC, 0x63, 0x1F, 0x80,
@@ -403,8 +401,6 @@ static void create_ui(void) {
     lv_img_set_src(time_img, &time_img_dsc);
     lv_obj_set_pos(time_img, 51, 54);
     lv_obj_set_user_data(time_img, &time_img_dsc);
-    
-    // Create image buffer for layer (30x5 pixels)
     static lv_color_t layer_buf[30 * 5];
     static lv_img_dsc_t layer_img_dsc = {
         .header.cf = LV_IMG_CF_TRUE_COLOR,
@@ -484,8 +480,6 @@ lv_obj_t *zmk_display_status_screen(void) {
         lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
         
         create_ui();
-        
-        // Update every 50ms for smooth animations and time updates
         lv_timer_create(animation_timer_cb, 50, NULL);
         
         current_layer = zmk_keymap_highest_layer_active();
