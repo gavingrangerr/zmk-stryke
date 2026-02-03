@@ -411,6 +411,8 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
         // Force immediate update
         force_layer_update = true;
         update_layer_display();
+        
+        // Also clear the key display when layer changes
         strcpy(last_key_text, "-");
         update_key_display();
     }
@@ -435,37 +437,9 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
             update_key_display();
         }
         
+        // When position 11 is pressed, wait for the layer event to update
+        // Don't manually change current_layer here - let layer_state_changed_cb handle it
     }
-    
-    return 0;
-}
-
-static int layer_state_changed_cb(const zmk_event_t *eh) {
-    const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
-    if (ev == NULL) return 0;
-
-    uint8_t new_layer = zmk_keymap_highest_layer_active();
-
-    if (new_layer == current_layer) {
-        if (ev->state) {
-            if (ev->layer < MAX_LAYERS) {
-                current_layer = ev->layer;
-            }
-        } else {
-            current_layer = 0;
-        }
-    } else {
-        current_layer = new_layer;
-    }
-
-    if (current_layer >= MAX_LAYERS) {
-        current_layer = 0;
-    }
-
-    force_layer_update = true;
-    update_layer_display();
-    strcpy(last_key_text, "-");
-    update_key_display();
     
     return 0;
 }
