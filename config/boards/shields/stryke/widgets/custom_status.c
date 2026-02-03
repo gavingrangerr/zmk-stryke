@@ -5,6 +5,7 @@
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
 #include <lvgl.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,12 +17,152 @@ extern "C" {
 #define MAX_LAYERS 5
 #define MAX_POSITIONS 12
 
+// Eastern Standard Time offset (UTC-5)
+#define EST_OFFSET_HOURS -5
+
 static lv_obj_t *screen = NULL;
 static lv_obj_t *key_label = NULL;
+static lv_obj_t *time_canvas = NULL;
+static lv_obj_t *layer_canvas = NULL;
 
 static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
 static int64_t last_key_time = 0;
+
+// Org_01 bitmap font data (5 pixels height, variable width)
+// Format: packed bits, left to right, top to bottom
+static const uint8_t org_01_bitmaps[] = {
+    // '0' - 5 wide
+    0xFC, 0x63, 0x1F, 0x80,
+    // '1' - 1 wide
+    0xF8,
+    // '2' - 5 wide
+    0xF8, 0x7F, 0x0F, 0x80,
+    // '3' - 5 wide
+    0xF8, 0x7E, 0x1F, 0x80,
+    // '4' - 5 wide
+    0x8C, 0x7E, 0x10, 0x80,
+    // '5' - 5 wide
+    0xFC, 0x3E, 0x1F, 0x80,
+    // '6' - 5 wide
+    0xFC, 0x3F, 0x1F, 0x80,
+    // '7' - 5 wide
+    0xF8, 0x42, 0x10, 0x80,
+    // '8' - 5 wide
+    0xFC, 0x7F, 0x1F, 0x80,
+    // '9' - 5 wide
+    0xFC, 0x7E, 0x1F, 0x80,
+    // ':' - 1 wide
+    0x90,
+    // 'A' - 5 wide
+    0xFC, 0x7F, 0x18, 0x80,
+    // 'B' - 5 wide
+    0xF4, 0x7D, 0x1F, 0x00,
+    // 'C' - 5 wide
+    0xFC, 0x21, 0x0F, 0x80,
+    // 'D' - 5 wide
+    0xF4, 0x63, 0x1F, 0x00,
+    // 'E' - 5 wide
+    0xFC, 0x3F, 0x0F, 0x80,
+    // 'F' - 5 wide
+    0xFC, 0x3F, 0x08, 0x00,
+    // 'G' - 5 wide
+    0xFC, 0x2F, 0x1F, 0x80,
+    // 'H' - 5 wide
+    0x8C, 0x7F, 0x18, 0x80,
+    // 'I' - 5 wide
+    0xF9, 0x08, 0x4F, 0x80,
+    // 'J' - 5 wide
+    0x78, 0x85, 0x2F, 0x80,
+    // 'K' - 5 wide
+    0x8D, 0xB1, 0x68, 0x80,
+    // 'L' - 5 wide
+    0x84, 0x21, 0x0F, 0x80,
+    // 'M' - 5 wide
+    0xFD, 0x6B, 0x5A, 0x80,
+    // 'N' - 5 wide
+    0xFC, 0x63, 0x18, 0x80,
+    // 'O' - 5 wide
+    0xFC, 0x63, 0x1F, 0x80,
+    // 'P' - 5 wide
+    0xFC, 0x7F, 0x08, 0x00,
+    // 'Q' - 5 wide
+    0xFC, 0x63, 0x3F, 0x80,
+    // 'R' - 5 wide
+    0xFC, 0x7F, 0x29, 0x00,
+    // 'S' - 5 wide
+    0xFC, 0x3E, 0x1F, 0x80,
+    // 'T' - 5 wide
+    0xF9, 0x08, 0x42, 0x00,
+    // 'U' - 5 wide
+    0x8C, 0x63, 0x1F, 0x80,
+    // 'V' - 5 wide
+    0x8C, 0x62, 0xA2, 0x00,
+    // 'W' - 5 wide
+    0xAD, 0x6B, 0x5F, 0x80,
+    // 'X' - 5 wide
+    0x8A, 0x88, 0xA8, 0x80,
+    // 'Y' - 5 wide
+    0x8C, 0x54, 0x42, 0x00,
+    // 'Z' - 5 wide
+    0xF8, 0x7F, 0x0F, 0x80,
+};
+
+// Bitmap offsets for each character (in bytes)
+static const uint8_t org_01_offsets[] = {
+    0,   // '0'
+    4,   // '1'
+    5,   // '2'
+    9,   // '3'
+    13,  // '4'
+    17,  // '5'
+    21,  // '6'
+    25,  // '7'
+    29,  // '8'
+    33,  // '9'
+    37,  // ':'
+    38,  // 'A'
+    42,  // 'B'
+    46,  // 'C'
+    50,  // 'D'
+    54,  // 'E'
+    58,  // 'F'
+    62,  // 'G'
+    66,  // 'H'
+    70,  // 'I'
+    74,  // 'J'
+    78,  // 'K'
+    82,  // 'L'
+    86,  // 'M'
+    90,  // 'N'
+    94,  // 'O'
+    98,  // 'P'
+    102, // 'Q'
+    106, // 'R'
+    110, // 'S'
+    114, // 'T'
+    118, // 'U'
+    122, // 'V'
+    126, // 'W'
+    130, // 'X'
+    134, // 'Y'
+    138, // 'Z'
+};
+
+// Width of each character in pixels
+static const uint8_t org_01_widths[] = {
+    5, 1, 5, 5, 5, 5, 5, 5, 5, 5, // 0-9
+    1, // :
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 // A-Z
+};
+
+static const char* layer_names[MAX_LAYERS] = {
+    "BASE",  // Layer 0
+    "EDA",   // Layer 1
+    "CAD",   // Layer 2
+    "IDE",   // Layer 3
+    "MCU"    // Layer 4
+};
 
 static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
     {
@@ -58,6 +199,88 @@ static const char* get_key_name_by_position(uint8_t layer, uint8_t position) {
     return key_names[layer][position];
 }
 
+static const char* get_layer_name(uint8_t layer) {
+    if (layer >= MAX_LAYERS) {
+        return "???";
+    }
+    return layer_names[layer];
+}
+
+static void get_est_time_string(char* buffer, size_t buffer_size) {
+    time_t now;
+    struct tm timeinfo;
+    
+    // Get current time in UTC
+    time(&now);
+    
+    // Convert to EST (UTC-5)
+    now += (EST_OFFSET_HOURS * 3600);
+    gmtime_r(&now, &timeinfo);
+    
+    // Format as HH:MM
+    snprintf(buffer, buffer_size, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
+}
+
+// Draw a single Org_01 character on canvas
+static void draw_org_char(lv_obj_t* canvas, char c, int16_t x, int16_t y) {
+    int char_index = -1;
+    
+    // Map character to index
+    if (c >= '0' && c <= '9') {
+        char_index = c - '0';
+    } else if (c == ':') {
+        char_index = 10;
+    } else if (c >= 'A' && c <= 'Z') {
+        char_index = 11 + (c - 'A');
+    } else if (c >= 'a' && c <= 'z') {
+        char_index = 11 + (c - 'a'); // Convert lowercase to uppercase
+    } else {
+        return; // Unsupported character
+    }
+    
+    uint8_t offset = org_01_offsets[char_index];
+    uint8_t width = org_01_widths[char_index];
+    
+    // Draw the character pixel by pixel (5 pixel height)
+    for (int cy = 0; cy < 5; cy++) {
+        for (int cx = 0; cx < width; cx++) {
+            int bit_index = cy * width + cx;
+            int byte_index = offset + (bit_index / 8);
+            int bit_offset = 7 - (bit_index % 8);
+            
+            if (org_01_bitmaps[byte_index] & (1 << bit_offset)) {
+                lv_canvas_set_px(canvas, x + cx, y + cy, lv_color_white(), LV_OPA_COVER);
+            }
+        }
+    }
+}
+
+// Draw a string using Org_01 font
+static void draw_org_string(lv_obj_t* canvas, const char* str, int16_t x, int16_t y) {
+    int16_t cursor_x = x;
+    
+    for (int i = 0; str[i] != '\0'; i++) {
+        char c = str[i];
+        draw_org_char(canvas, c, cursor_x, y);
+        
+        // Get character width and advance cursor
+        int char_index = -1;
+        if (c >= '0' && c <= '9') {
+            char_index = c - '0';
+        } else if (c == ':') {
+            char_index = 10;
+        } else if (c >= 'A' && c <= 'Z') {
+            char_index = 11 + (c - 'A');
+        } else if (c >= 'a' && c <= 'z') {
+            char_index = 11 + (c - 'a');
+        }
+        
+        if (char_index >= 0) {
+            cursor_x += org_01_widths[char_index] + 1; // 1 pixel spacing
+        }
+    }
+}
+
 static int find_best_text_size(const char* text, int max_width, int max_height) {
     int text_len = strlen(text);
     
@@ -84,6 +307,29 @@ static const lv_font_t* get_font_for_size(int size) {
     } else {
         return &lv_font_montserrat_10;
     }
+}
+
+static void update_time_display(void) {
+    if (time_canvas == NULL) return;
+    
+    char time_str[6];
+    get_est_time_string(time_str, sizeof(time_str));
+    
+    // Clear and redraw the canvas with new time
+    lv_canvas_fill_bg(time_canvas, lv_color_black(), LV_OPA_COVER);
+    draw_org_string(time_canvas, time_str, 0, 0);
+    lv_obj_invalidate(time_canvas);
+}
+
+static void update_layer_display(void) {
+    if (layer_canvas == NULL) return;
+    
+    const char* layer_name = get_layer_name(current_layer);
+    
+    // Clear and redraw the canvas with new layer
+    lv_canvas_fill_bg(layer_canvas, lv_color_black(), LV_OPA_COVER);
+    draw_org_string(layer_canvas, layer_name, 0, 0);
+    lv_obj_invalidate(layer_canvas);
 }
 
 static void update_key_display(void) {
@@ -116,18 +362,35 @@ static void create_ui(void) {
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
-    // Key label - centered on screen
+    // Create canvas buffer for time (5 chars "00:00" = 5+1+5+1+5+1+1 = ~27 pixels wide, 5 pixels tall)
+    static lv_color_t time_canvas_buf[LV_CANVAS_BUF_SIZE_TRUE_COLOR(30, 5)];
+    time_canvas = lv_canvas_create(screen);
+    lv_canvas_set_buffer(time_canvas, time_canvas_buf, 30, 5, LV_IMG_CF_TRUE_COLOR);
+    lv_canvas_fill_bg(time_canvas, lv_color_black(), LV_OPA_COVER);
+    lv_obj_set_pos(time_canvas, 51, 54); // Position at (51, 59) - 5 pixels for font height
+    
+    // Create canvas buffer for layer (4 chars "BASE"/"EDA "/"CAD "/"IDE "/"MCU " = ~24 pixels wide, 5 pixels tall)
+    static lv_color_t layer_canvas_buf[LV_CANVAS_BUF_SIZE_TRUE_COLOR(30, 5)];
+    layer_canvas = lv_canvas_create(screen);
+    lv_canvas_set_buffer(layer_canvas, layer_canvas_buf, 30, 5, LV_IMG_CF_TRUE_COLOR);
+    lv_canvas_fill_bg(layer_canvas, lv_color_black(), LV_OPA_COVER);
+    lv_obj_set_pos(layer_canvas, 76, 2); // Position at (76, 7) - 5 pixels for font height
+    
+    // Key label - centered on screen (using standard LVGL font)
     key_label = lv_label_create(screen);
     lv_label_set_text(key_label, last_key_text);
     lv_obj_set_style_text_color(key_label, lv_color_make(100, 100, 100), LV_PART_MAIN);
     lv_obj_set_style_text_font(key_label, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_center(key_label);
     
+    update_time_display();
+    update_layer_display();
     update_key_display();
 }
 
 static void animation_timer_cb(lv_timer_t* timer) {
     update_key_display();
+    update_time_display();
 }
 
 static int layer_state_changed_cb(const zmk_event_t *eh) {
@@ -136,6 +399,8 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
     
     current_layer = zmk_keymap_highest_layer_active();
     if (current_layer > 4) current_layer = 4;
+    
+    update_layer_display();
     
     return 0;
 }
@@ -174,6 +439,7 @@ lv_obj_t *zmk_display_status_screen(void) {
         
         create_ui();
         
+        // Update every 50ms for smooth animations and time updates
         lv_timer_create(animation_timer_cb, 50, NULL);
         
         current_layer = zmk_keymap_highest_layer_active();
