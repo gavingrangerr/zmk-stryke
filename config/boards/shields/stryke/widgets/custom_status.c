@@ -94,22 +94,22 @@ static const char* key_names[MAX_LAYERS][MAX_POSITIONS] = {
     {
         "CMD+C", "CMD+V", "CMD+X", "CMD+Z",
         "CMD+A", "CMD+S", "SIGNOUT", "EMAIL",
-        "CMD+SHFT+3", "CMD+SHFT+4", "Bootloader", "KiCad"
+        "CMD+SHFT+3", "CMD+SHFT+4", "Bootloader", "EDA"
     },
     {
         "R", "M", "G", "DEL",
         "V", "E", "X", "W",
-        "B", "F", "H", "Fusion"
+        "B", "F", "H", "CAD"
     },
     {
         "Cmd+K", "R", "L", "D",
         "E", "Q", "F", "CMD+Z",
-        "CMD+1", "CMD+2", "CMD+0", "VS Code"
+        "CMD+1", "CMD+2", "CMD+0", "IDE"
     },
     {
         "Cmd+P", "CMD+SHFT+P", "CMD+B", "CMD+FSLH",
         "CMD+D", "CMD+SHFT+L", "CMD+F", "CMD+Z",
-        "CMD+SQRT", "CMD+SHFT+F", "CMD+SHFT+E", "Arduino"
+        "CMD+SQRT", "CMD+SHFT+F", "CMD+SHFT+E", "MCU"
     },
     {
         "CMD+R", "CMD+U", "CMD+SHFT+M", "CMD+K",
@@ -236,11 +236,8 @@ static void create_custom_background(void) {
     
     static lv_color_t bg_buf[SCREEN_WIDTH * SCREEN_HEIGHT];
     lv_canvas_set_buffer(bg_canvas, bg_buf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
-    
-    // Initialize buffer to black (all zeros = no pixels drawn on monochrome OLED)
-    memset(bg_buf, 0, sizeof(bg_buf));
 
-    // Draw only the white bitmap pixels where bit = 1
+    memset(bg_buf, 0, sizeof(bg_buf));
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             int pixel_index = y * SCREEN_WIDTH + x;
@@ -310,8 +307,6 @@ static void create_ui(void) {
     if (screen == NULL) return;
     
     lv_obj_clean(screen);
-    
-    // Set screen background to black
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
@@ -372,12 +367,19 @@ static void animation_timer_cb(lv_timer_t* timer) {
 static int layer_state_changed_cb(const zmk_event_t *eh) {
     const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
     if (ev == NULL) return 0;
+
+    uint8_t new_layer = zmk_keymap_highest_layer_active();
     
-    uint8_t new_layer = ev->layer;
-    
-    if (new_layer < MAX_LAYERS) {
+    if (new_layer != current_layer) {
         current_layer = new_layer;
+
+        if (current_layer >= MAX_LAYERS) {
+            current_layer = 0;
+        }
+
         update_layer_display();
+        strcpy(last_key_text, "-");
+        update_key_display();
     }
     
     return 0;
@@ -399,12 +401,6 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
             last_key_time = k_uptime_get();
             update_key_display();
         }
-        
-        if (position == 11) {
-            current_layer = zmk_keymap_highest_layer_active();
-            if (current_layer >= MAX_LAYERS) current_layer = 0;
-            update_layer_display();
-        }
     }
     
     return 0;
@@ -423,9 +419,9 @@ lv_obj_t *zmk_display_status_screen(void) {
         
         create_ui();
         lv_timer_create(animation_timer_cb, 50, NULL);
-        
         current_layer = zmk_keymap_highest_layer_active();
-        if (current_layer > 4) current_layer = 4;
+        if (current_layer >= MAX_LAYERS) current_layer = 0;
+        update_layer_display();
     }
     
     return screen;
