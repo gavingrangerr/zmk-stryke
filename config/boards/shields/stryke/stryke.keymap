@@ -25,7 +25,7 @@
         };
 
         kicad_layer {
-            label = "KiCad";
+            label = "EDA";
             bindings = <
                 &kp R  &kp M  &kp G  &kp DEL
                 &kp V  &kp E  &kp X  &kp W
@@ -34,7 +34,7 @@
         };
 
         fusion_layer {
-            label = "Fusion";
+            label = "CAD";
             bindings = <
                 &kp LG(K)   &kp R       &kp L       &kp D
                 &kp E       &kp Q       &kp F       &kp LG(Z)
@@ -43,7 +43,7 @@
         };
 
         vscode_layer {
-            label = "VS-Code";
+            label = "IDE";
             bindings = <
                 &kp LG(P)    &kp LS(LG(P))  &kp LG(B)      &kp LG(FSLH)
                 &kp LG(D)    &kp LS(LG(L))  &kp LG(F)      &kp LG(Z)
@@ -52,7 +52,7 @@
         };
 
         arduino_layer {
-            label = "Arduino";
+            label = "MCU";
             bindings = <
                 &kp LG(R)   &kp LG(U)   &kp LS(LG(M))  &kp LG(K)
                 &kp LG(T)   &kp LG(Z)   &kp LG(L)      &kp LG(S)

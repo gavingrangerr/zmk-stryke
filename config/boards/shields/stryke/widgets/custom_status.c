@@ -22,8 +22,8 @@ extern "C" {
 
 static lv_obj_t *screen = NULL;
 static lv_obj_t *key_label = NULL;
-static lv_obj_t *time_canvas = NULL;
-static lv_obj_t *layer_canvas = NULL;
+static lv_obj_t *time_img = NULL;
+static lv_obj_t *layer_img = NULL;
 
 static uint8_t current_layer = 0;
 static char last_key_text[32] = "---";
@@ -221,8 +221,8 @@ static void get_est_time_string(char* buffer, size_t buffer_size) {
     snprintf(buffer, buffer_size, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
 }
 
-// Draw a single Org_01 character on canvas
-static void draw_org_char(lv_obj_t* canvas, char c, int16_t x, int16_t y) {
+// Draw a single Org_01 character on image buffer
+static void draw_org_char(lv_color_t* buf, int16_t buf_w, int16_t buf_h, char c, int16_t x, int16_t y) {
     int char_index = -1;
     
     // Map character to index
@@ -249,19 +249,23 @@ static void draw_org_char(lv_obj_t* canvas, char c, int16_t x, int16_t y) {
             int bit_offset = 7 - (bit_index % 8);
             
             if (org_01_bitmaps[byte_index] & (1 << bit_offset)) {
-                lv_canvas_set_px(canvas, x + cx, y + cy, lv_color_white(), LV_OPA_COVER);
+                int px = x + cx;
+                int py = y + cy;
+                if (px >= 0 && px < buf_w && py >= 0 && py < buf_h) {
+                    buf[py * buf_w + px] = lv_color_white();
+                }
             }
         }
     }
 }
 
 // Draw a string using Org_01 font
-static void draw_org_string(lv_obj_t* canvas, const char* str, int16_t x, int16_t y) {
+static void draw_org_string(lv_color_t* buf, int16_t buf_w, int16_t buf_h, const char* str, int16_t x, int16_t y) {
     int16_t cursor_x = x;
     
     for (int i = 0; str[i] != '\0'; i++) {
         char c = str[i];
-        draw_org_char(canvas, c, cursor_x, y);
+        draw_org_char(buf, buf_w, buf_h, c, cursor_x, y);
         
         // Get character width and advance cursor
         int char_index = -1;
@@ -310,26 +314,46 @@ static const lv_font_t* get_font_for_size(int size) {
 }
 
 static void update_time_display(void) {
-    if (time_canvas == NULL) return;
+    if (time_img == NULL) return;
     
     char time_str[6];
     get_est_time_string(time_str, sizeof(time_str));
     
-    // Clear and redraw the canvas with new time
-    lv_canvas_fill_bg(time_canvas, lv_color_black(), LV_OPA_COVER);
-    draw_org_string(time_canvas, time_str, 0, 0);
-    lv_obj_invalidate(time_canvas);
+    // Get the image descriptor and buffer
+    lv_img_dsc_t* img_dsc = (lv_img_dsc_t*)lv_obj_get_user_data(time_img);
+    if (img_dsc && img_dsc->data) {
+        lv_color_t* buf = (lv_color_t*)img_dsc->data;
+        
+        // Clear buffer to black
+        memset(buf, 0, 30 * 5 * sizeof(lv_color_t));
+        
+        // Draw the time string
+        draw_org_string(buf, 30, 5, time_str, 0, 0);
+        
+        // Invalidate to trigger redraw
+        lv_obj_invalidate(time_img);
+    }
 }
 
 static void update_layer_display(void) {
-    if (layer_canvas == NULL) return;
+    if (layer_img == NULL) return;
     
     const char* layer_name = get_layer_name(current_layer);
     
-    // Clear and redraw the canvas with new layer
-    lv_canvas_fill_bg(layer_canvas, lv_color_black(), LV_OPA_COVER);
-    draw_org_string(layer_canvas, layer_name, 0, 0);
-    lv_obj_invalidate(layer_canvas);
+    // Get the image descriptor and buffer
+    lv_img_dsc_t* img_dsc = (lv_img_dsc_t*)lv_obj_get_user_data(layer_img);
+    if (img_dsc && img_dsc->data) {
+        lv_color_t* buf = (lv_color_t*)img_dsc->data;
+        
+        // Clear buffer to black
+        memset(buf, 0, 30 * 5 * sizeof(lv_color_t));
+        
+        // Draw the layer name
+        draw_org_string(buf, 30, 5, layer_name, 0, 0);
+        
+        // Invalidate to trigger redraw
+        lv_obj_invalidate(layer_img);
+    }
 }
 
 static void update_key_display(void) {
@@ -362,19 +386,41 @@ static void create_ui(void) {
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
-    // Create canvas buffer for time (5 chars "00:00" = 5+1+5+1+5+1+1 = ~27 pixels wide, 5 pixels tall)
-    static lv_color_t time_canvas_buf[LV_CANVAS_BUF_SIZE_TRUE_COLOR(30, 5)];
-    time_canvas = lv_canvas_create(screen);
-    lv_canvas_set_buffer(time_canvas, time_canvas_buf, 30, 5, LV_IMG_CF_TRUE_COLOR);
-    lv_canvas_fill_bg(time_canvas, lv_color_black(), LV_OPA_COVER);
-    lv_obj_set_pos(time_canvas, 51, 54); // Position at (51, 59) - 5 pixels for font height
+    // Create image buffer for time (30x5 pixels)
+    static lv_color_t time_buf[30 * 5];
+    static lv_img_dsc_t time_img_dsc = {
+        .header.cf = LV_IMG_CF_TRUE_COLOR,
+        .header.always_zero = 0,
+        .header.reserved = 0,
+        .header.w = 30,
+        .header.h = 5,
+        .data_size = 30 * 5 * sizeof(lv_color_t),
+        .data = (uint8_t*)time_buf,
+    };
+    memset(time_buf, 0, sizeof(time_buf));
     
-    // Create canvas buffer for layer (4 chars "BASE"/"EDA "/"CAD "/"IDE "/"MCU " = ~24 pixels wide, 5 pixels tall)
-    static lv_color_t layer_canvas_buf[LV_CANVAS_BUF_SIZE_TRUE_COLOR(30, 5)];
-    layer_canvas = lv_canvas_create(screen);
-    lv_canvas_set_buffer(layer_canvas, layer_canvas_buf, 30, 5, LV_IMG_CF_TRUE_COLOR);
-    lv_canvas_fill_bg(layer_canvas, lv_color_black(), LV_OPA_COVER);
-    lv_obj_set_pos(layer_canvas, 76, 2); // Position at (76, 7) - 5 pixels for font height
+    time_img = lv_img_create(screen);
+    lv_img_set_src(time_img, &time_img_dsc);
+    lv_obj_set_pos(time_img, 51, 54);
+    lv_obj_set_user_data(time_img, &time_img_dsc);
+    
+    // Create image buffer for layer (30x5 pixels)
+    static lv_color_t layer_buf[30 * 5];
+    static lv_img_dsc_t layer_img_dsc = {
+        .header.cf = LV_IMG_CF_TRUE_COLOR,
+        .header.always_zero = 0,
+        .header.reserved = 0,
+        .header.w = 30,
+        .header.h = 5,
+        .data_size = 30 * 5 * sizeof(lv_color_t),
+        .data = (uint8_t*)layer_buf,
+    };
+    memset(layer_buf, 0, sizeof(layer_buf));
+    
+    layer_img = lv_img_create(screen);
+    lv_img_set_src(layer_img, &layer_img_dsc);
+    lv_obj_set_pos(layer_img, 76, 2);
+    lv_obj_set_user_data(layer_img, &layer_img_dsc);
     
     // Key label - centered on screen (using standard LVGL font)
     key_label = lv_label_create(screen);
