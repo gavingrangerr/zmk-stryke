@@ -24,7 +24,7 @@ static lv_obj_t *layer_img = NULL;
 static lv_obj_t *bg_canvas = NULL;
 
 static uint8_t current_layer = 0;
-static char last_key_text[32] = "---";
+static char last_key_text[32] = "-";
 static int64_t last_key_time = 0;
 
 static const uint8_t custom_background[] = {
@@ -296,26 +296,21 @@ static void create_custom_background(void) {
     if (bg_canvas != NULL) {
         lv_obj_del(bg_canvas);
     }
-    
-    bg_canvas = lv_canvas_create(screen);
-    lv_obj_set_size(bg_canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
-    lv_obj_move_to_index(bg_canvas, 0);
-    static lv_color_t bg_buf[SCREEN_WIDTH * SCREEN_HEIGHT];
-    lv_canvas_set_buffer(bg_canvas, bg_buf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
-    lv_canvas_fill_bg(bg_canvas, lv_color_black(), LV_OPA_COVER);
 
-    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-        for (int x = 0; x < SCREEN_WIDTH; x++) {
-            int byte_index = (y * SCREEN_WIDTH + x) / 8;
-            int bit_index = 7 - ((y * SCREEN_WIDTH + x) % 8);
-            
-            if (byte_index < sizeof(custom_background)) {
-                if (custom_background[byte_index] & (1 << bit_index)) {
-                    lv_canvas_set_px_color(bg_canvas, x, y, lv_color_white());
-                }
-            }
-        }
-    }
+    static lv_img_dsc_t bg_img_dsc = {
+        .header.cf = LV_IMG_CF_INDEXED_1BIT,
+        .header.always_zero = 0,
+        .header.reserved = 0,
+        .header.w = SCREEN_WIDTH,
+        .header.h = SCREEN_HEIGHT,
+        .data_size = sizeof(custom_background),
+        .data = custom_background,
+    };
+
+    bg_canvas = lv_img_create(screen);
+    lv_img_set_src(bg_canvas, &bg_img_dsc);
+    lv_obj_set_pos(bg_canvas, 0, 0);
+    lv_obj_move_to_index(bg_canvas, 0);
 }
 
 static void update_time_display(void) {
