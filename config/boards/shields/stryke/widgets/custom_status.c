@@ -28,8 +28,7 @@ static char last_key_text[32] = "-";
 static int64_t last_key_time = 0;
 static bool force_layer_update = false;
 
-// Cache to prevent unnecessary redraws
-static uint8_t cached_layer = 255; // Invalid initial value to force first update
+static uint8_t cached_layer = 255;
 static char cached_time_str[6] = "";
 
 static const uint8_t org_01_bitmaps[] = {
@@ -242,10 +241,8 @@ static void create_custom_background(void) {
     static lv_color_t bg_buf[SCREEN_WIDTH * SCREEN_HEIGHT];
     lv_canvas_set_buffer(bg_canvas, bg_buf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
     
-    // Initialize buffer to black (all zeros = no pixels drawn on monochrome OLED)
     memset(bg_buf, 0, sizeof(bg_buf));
 
-    // Draw only the white bitmap pixels where bit = 1
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             int pixel_index = y * SCREEN_WIDTH + x;
@@ -267,7 +264,6 @@ static void update_time_display(void) {
     char time_str[6];
     get_est_time_string(time_str, sizeof(time_str));
     
-    // Only update if time has actually changed
     if (strcmp(time_str, cached_time_str) == 0) {
         return;
     }
@@ -286,7 +282,6 @@ static void update_time_display(void) {
 static void update_layer_display(void) {
     if (layer_img == NULL) return;
     
-    // Only update if layer has actually changed
     if (current_layer == cached_layer && !force_layer_update) {
         return;
     }
@@ -331,7 +326,6 @@ static void create_ui(void) {
     
     lv_obj_clean(screen);
     
-    // Set screen background to black
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
@@ -379,8 +373,7 @@ static void create_ui(void) {
     lv_obj_set_style_pad_all(key_label, 4, LV_PART_MAIN);
     lv_obj_center(key_label);
     
-    // Initialize cache
-    cached_layer = 255; // Force first update
+    cached_layer = 255;
     memset(cached_time_str, 0, sizeof(cached_time_str));
     
     update_time_display();
@@ -397,22 +390,18 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
     const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
     if (ev == NULL) return 0;
     
-    // Get the highest active layer
     uint8_t new_layer = zmk_keymap_highest_layer_active();
     
     if (new_layer != current_layer) {
         current_layer = new_layer;
         
-        // Ensure current_layer is within bounds
         if (current_layer >= MAX_LAYERS) {
             current_layer = 0;
         }
         
-        // Force immediate update
         force_layer_update = true;
         update_layer_display();
         
-        // Also clear the key display when layer changes
         strcpy(last_key_text, "-");
         update_key_display();
     }
@@ -436,9 +425,6 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
             last_key_time = k_uptime_get();
             update_key_display();
         }
-        
-        // When position 11 is pressed, wait for the layer event to update
-        // Don't manually change current_layer here - let layer_state_changed_cb handle it
     }
     
     return 0;
@@ -456,13 +442,11 @@ lv_obj_t *zmk_display_status_screen(void) {
         lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
         
         create_ui();
-        lv_timer_create(animation_timer_cb, 100, NULL); // Reduced to 100ms
+        lv_timer_create(animation_timer_cb, 100, NULL);
         
-        // Initialize with the current active layer
         current_layer = zmk_keymap_highest_layer_active();
         if (current_layer >= MAX_LAYERS) current_layer = 0;
         
-        // Force update layer display on initialization
         force_layer_update = true;
         update_layer_display();
     }
