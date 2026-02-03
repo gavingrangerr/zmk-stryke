@@ -297,20 +297,30 @@ static void create_custom_background(void) {
         lv_obj_del(bg_canvas);
     }
 
-    static lv_img_dsc_t bg_img_dsc = {
-        .header.cf = LV_IMG_CF_INDEXED_1BIT,
-        .header.always_zero = 0,
-        .header.reserved = 0,
-        .header.w = SCREEN_WIDTH,
-        .header.h = SCREEN_HEIGHT,
-        .data_size = sizeof(custom_background),
-        .data = custom_background,
-    };
-
-    bg_canvas = lv_img_create(screen);
-    lv_img_set_src(bg_canvas, &bg_img_dsc);
-    lv_obj_set_pos(bg_canvas, 0, 0);
+    bg_canvas = lv_canvas_create(screen);
+    lv_obj_set_size(bg_canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_obj_move_to_index(bg_canvas, 0);
+    
+    static lv_color_t bg_buf[SCREEN_WIDTH * SCREEN_HEIGHT];
+    lv_canvas_set_buffer(bg_canvas, bg_buf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
+    
+    // Fill with black background
+    lv_canvas_fill_bg(bg_canvas, lv_color_black(), LV_OPA_COVER);
+
+    // Draw white bitmap pixels
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            int pixel_index = y * SCREEN_WIDTH + x;
+            int byte_index = pixel_index / 8;
+            int bit_index = 7 - (pixel_index % 8);
+            
+            if (byte_index < sizeof(custom_background)) {
+                if (custom_background[byte_index] & (1 << bit_index)) {
+                    lv_canvas_set_px_color(bg_canvas, x, y, lv_color_white());
+                }
+            }
+        }
+    }
 }
 
 static void update_time_display(void) {
@@ -367,8 +377,12 @@ static void create_ui(void) {
     if (screen == NULL) return;
     
     lv_obj_clean(screen);
+    
+    // Set screen background to black
+    lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
+    
     create_custom_background();
-    lv_obj_set_style_bg_opa(screen, LV_OPA_TRANSP, LV_PART_MAIN);
     
     static lv_color_t time_buf[30 * 5];
     static lv_img_dsc_t time_img_dsc = {
@@ -408,8 +422,8 @@ static void create_ui(void) {
     lv_label_set_text(key_label, last_key_text);
     lv_obj_set_style_text_color(key_label, lv_color_make(100, 100, 100), LV_PART_MAIN);
     lv_obj_set_style_text_font(key_label, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(key_label, lv_color_make(0, 0, 0), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(key_label, LV_OPA_50, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(key_label, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(key_label, LV_OPA_TRANSP, LV_PART_MAIN);  // Transparent background
     lv_obj_set_style_pad_all(key_label, 4, LV_PART_MAIN);
     lv_obj_center(key_label);
     
