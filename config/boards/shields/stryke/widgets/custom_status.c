@@ -24,7 +24,7 @@ static lv_obj_t *layer_img = NULL;
 static lv_obj_t *bg_canvas = NULL;
 
 static uint8_t current_layer = 0;
-static char last_key_text[32] = "-";
+static char last_key_text[32] = " ";
 static int64_t last_key_time = 0;
 static bool force_layer_update = false;
 
