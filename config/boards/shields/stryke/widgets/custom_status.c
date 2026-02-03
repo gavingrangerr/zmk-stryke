@@ -5,7 +5,6 @@
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
 #include <lvgl.h>
-#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -205,18 +204,16 @@ static const char* get_layer_name(uint8_t layer) {
 }
 
 static void get_est_time_string(char* buffer, size_t buffer_size) {
-    time_t now;
-    struct tm timeinfo;
+    // Get uptime in seconds
+    int64_t uptime_sec = k_uptime_get() / 1000;
     
-    // Get current time in UTC
-    time(&now);
+    // Calculate relative hours/minutes since boot
+    // Note: Without an RTC, ZMK doesn't know the 'real' time, 
+    // but this will show time since the keyboard turned on.
+    int hours = (uptime_sec / 3600) % 24;
+    int mins = (uptime_sec / 60) % 60;
     
-    // Convert to EST (UTC-5)
-    now += (EST_OFFSET_HOURS * 3600);
-    gmtime_r(&now, &timeinfo);
-    
-    // Format as HH:MM
-    snprintf(buffer, buffer_size, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
+    snprintf(buffer, buffer_size, "%02d:%02d", hours, mins);
 }
 
 // Draw a single Org_01 character on image buffer
