@@ -19,7 +19,6 @@ extern "C" {
 
 #define BOOT_SCREEN_DURATION_MS 3000
 #define LINE_SPACING 8
-#define BOOT_TEXT_COLOR LV_COLOR_WHITE
 #define BOOT_TEXT_FONT &lv_font_montserrat_8
 
 static const char* boot_screen_lines[] = {
@@ -296,7 +295,7 @@ static void create_boot_screen(void) {
         lv_obj_t *line_label = lv_label_create(scroll_container);
         lv_label_set_text(line_label, boot_screen_lines[i]);
         lv_obj_set_style_text_font(line_label, BOOT_TEXT_FONT, 0);
-        lv_obj_set_style_text_color(line_label, BOOT_TEXT_COLOR, 0);
+        lv_obj_set_style_text_color(line_label, lv_color_white(), 0);
         lv_obj_set_pos(line_label, 0, i * LINE_SPACING);
     }
     
