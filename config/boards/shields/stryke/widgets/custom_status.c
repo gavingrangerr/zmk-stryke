@@ -22,7 +22,7 @@ extern "C" {
 #define BOOT_TEXT_FONT &lv_font_montserrat_8
 
 static const char* boot_screen_lines[] = {
-    "> [ 0.0001 ] MPU: ARM® CM4F @ 64MHZ [ nRF52840 ]",
+    "> [ 0.0001 ] MPU: ARM CM4F @ 64MHZ [ nRF52840 ]",
     "> [ 0.0009 ] MEM: FLSH 1MB | SRAM 256KB | STK_PTR: 0x20004000",
     "> [ 0.0025 ] INIT: ZMK-CORE v3.5.0 [ BLD: 2026.02.04 ]",
     ">",
@@ -556,7 +556,7 @@ lv_obj_t *zmk_display_status_screen(void) {
         create_boot_screen();
         create_main_ui();
         
-        lv_timer_create(animation_timer_cb, 50, NULL);
+        lv_timer_create(animation_timer_cb, 16, NULL);
         
         current_layer = zmk_keymap_highest_layer_active();
         if (current_layer >= MAX_LAYERS) current_layer = 0;
