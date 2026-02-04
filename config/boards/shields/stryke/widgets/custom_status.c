@@ -18,36 +18,6 @@ extern "C" {
 #define MAX_POSITIONS 12
 
 #define BOOT_SCREEN_DURATION_MS 10000
-#define LINE_SPACING 8
-#define BOOT_TEXT_FONT &lv_font_montserrat_8
-
-static const char* boot_screen_lines[] = {
-    "> [ 0.0001 ] MPU: ARM CM4F @ 64MHZ [ nRF52840 ]",
-    "> [ 0.0009 ] MEM: FLSH 1MB | SRAM 256KB | STK_PTR: 0x20004000",
-    "> [ 0.0025 ] INIT: ZMK-CORE v3.5.0 [ BLD: 2026.02.04 ]",
-    ">",
-    "--- [ HW_LAYER: NICE!NANO V2 ] ---",
-    "GPIO: CFG [ P0.06 - P1.15 ] | PULL_UP | DBNCE: 5ms",
-    "I2C: BUS [ TWIM1 ] @ 400KHZ | ADDR: 0x3C",
-    "OLED: SSD1306 [ 128x64 ] DRV_ATTACHED | BUF: OK",
-    "MATX: 3x4 GRID | SCAN: 1000HZ | KSCAN: ACTIVE",
-    ">",
-    "--- [ PWR & TELEMETRY ] ---",
-    "V_BUS: 5.01V | STAT: BUS_PWR | LIM: 500mA",
-    "V_BAT: 4.12V (92%) | CHRG_STAT: LIPO_CC",
-    "TEMP: SYS_CORE 31.4°C | REG: DCDC_EN",
-    ">",
-    "--- [ COMM & SEC ] ---",
-    "BLE: S140 STK | PHY: 2M | ADDR: [EB:04:12:F3:A1]",
-    "BLE: PROF: \"NEXUSPRO\" | BOND: 1/8 | LAT: 7.5ms",
-    "USB: HID_ENUM [ MACROPAD ] | CDC_ACM: OK",
-    ">",
-    "--- [ SYS_READY ] ---",
-    "KERNEL: ALL THRDS SPAWNED | STAT: NOMINAL",
-    "WELCOME TO NEXUS_OS"
-};
-
-#define BOOT_LINES_COUNT (sizeof(boot_screen_lines) / sizeof(boot_screen_lines[0]))
 
 typedef enum {
     DISPLAY_STATE_BOOT_SCREEN,
@@ -281,26 +251,38 @@ static void create_boot_screen(void) {
     lv_obj_set_style_bg_color(boot_container, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(boot_container, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(boot_container, 0, 0);
-    lv_obj_set_style_pad_all(boot_container, 2, 0);
+    lv_obj_set_style_pad_all(boot_container, 0, 0);
     lv_obj_clear_flag(boot_container, LV_OBJ_FLAG_SCROLLABLE);
     
-    int total_height = BOOT_LINES_COUNT * LINE_SPACING;
+    // Create canvas for boot bitmap
+    lv_obj_t *boot_canvas = lv_canvas_create(boot_container);
+    lv_obj_set_size(boot_canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
+    lv_obj_set_pos(boot_canvas, 0, 0);
     
-    lv_obj_t *scroll_container = lv_obj_create(boot_container);
-    lv_obj_set_size(scroll_container, SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4);
-    lv_obj_set_style_bg_opa(scroll_container, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(scroll_container, 0, 0);
+    static lv_color_t boot_buf[SCREEN_WIDTH * SCREEN_HEIGHT];
+    lv_canvas_set_buffer(boot_canvas, boot_buf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
     
-    for (int i = 0; i < BOOT_LINES_COUNT; i++) {
-        lv_obj_t *line_label = lv_label_create(scroll_container);
-        lv_label_set_text(line_label, boot_screen_lines[i]);
-        lv_obj_set_style_text_font(line_label, BOOT_TEXT_FONT, 0);
-        lv_obj_set_style_text_color(line_label, lv_color_white(), 0);
-        lv_obj_set_pos(line_label, 0, i * LINE_SPACING);
+    memset(boot_buf, 0, sizeof(boot_buf));
+
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            int pixel_index = y * SCREEN_WIDTH + x;
+            int byte_index = pixel_index / 8;
+            int bit_index = 7 - (pixel_index % 8);
+            
+            if (byte_index < sizeof(startup_bitmap)) {
+                if (startup_bitmap[byte_index] & (1 << bit_index)) {
+                    lv_canvas_set_px_color(boot_canvas, x, y, lv_color_white());
+                }
+            }
+        }
     }
-    
-    // Start at the top (first line)
-    lv_obj_scroll_to_y(scroll_container, 0, LV_ANIM_OFF);
+
+    lv_obj_t *booting_label = lv_label_create(boot_container);
+    lv_label_set_text(booting_label, "BOOTING...");
+    lv_obj_set_style_text_font(booting_label, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(booting_label, lv_color_white(), 0);
+    lv_obj_set_pos(booting_label, 65, 51);
     
     boot_screen_start_time = k_uptime_get();
 }
@@ -310,16 +292,7 @@ static void update_boot_screen(void) {
     
     int64_t elapsed = k_uptime_get() - boot_screen_start_time;
     
-    if (elapsed < BOOT_SCREEN_DURATION_MS) {
-        int scroll_pos = (elapsed * 100) / BOOT_SCREEN_DURATION_MS;
-        lv_obj_t *scroll_container = lv_obj_get_child(boot_container, 0);
-        if (scroll_container) {
-            int total_height = BOOT_LINES_COUNT * LINE_SPACING;
-            int max_scroll = total_height > (SCREEN_HEIGHT - 8) ? total_height - (SCREEN_HEIGHT - 8) : 0;
-            int target_scroll = (max_scroll * scroll_pos) / 100;
-            lv_obj_scroll_to_y(scroll_container, target_scroll, LV_ANIM_OFF);
-        }
-    } else {
+    if (elapsed >= BOOT_SCREEN_DURATION_MS) {
         current_display_state = DISPLAY_STATE_MAIN_UI;
         lv_obj_add_flag(boot_container, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(main_container, LV_OBJ_FLAG_HIDDEN);
