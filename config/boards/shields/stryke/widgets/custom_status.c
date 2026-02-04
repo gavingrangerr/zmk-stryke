@@ -18,7 +18,6 @@ extern "C" {
 #define MAX_POSITIONS 12
 
 #define BOOT_SCREEN_DURATION_MS 10000
-#define BOOT_MESSAGE_CYCLE_MS 500
 
 typedef enum {
     DISPLAY_STATE_BOOT_SCREEN,
@@ -259,12 +258,22 @@ static void update_boot_message(void) {
     if (booting_label == NULL) return;
     
     int64_t now = k_uptime_get();
+    int64_t elapsed = now - boot_screen_start_time;
     
-    if (now - last_boot_msg_update >= BOOT_MESSAGE_CYCLE_MS) {
-        current_boot_msg_index = (current_boot_msg_index + 1) % boot_msg_count;
-        lv_label_set_text(booting_label, boot_messages[current_boot_msg_index]);
-        last_boot_msg_update = now;
+    int64_t message_duration = BOOT_SCREEN_DURATION_MS / boot_msg_count;
+    
+    uint8_t target_msg_index = elapsed / message_duration;
+    
+    if (target_msg_index >= boot_msg_count) {
+        target_msg_index = boot_msg_count - 1;
     }
+
+    if (target_msg_index != current_boot_msg_index) {
+        current_boot_msg_index = target_msg_index;
+        lv_label_set_text(booting_label, boot_messages[current_boot_msg_index]);
+    }
+    
+    last_boot_msg_update = now;
 }
 
 static void create_boot_screen(void) {
