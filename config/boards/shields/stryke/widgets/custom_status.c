@@ -16,6 +16,8 @@ extern "C" {
 #define MAX_TEXT_HEIGHT 16
 #define MAX_LAYERS 5
 #define MAX_POSITIONS 12
+#define MAX_STARTUP_MESSAGES 10
+#define MESSAGE_DISPLAY_TIME_MS 1000
 
 static lv_obj_t *screen = NULL;
 static lv_obj_t *key_label = NULL;
@@ -30,6 +32,37 @@ static bool force_layer_update = false;
 
 static uint8_t cached_layer = 255;
 static char cached_time_str[6] = "";
+
+typedef enum {
+    STARTUP_STATE_IDLE,
+    STARTUP_STATE_SHOWING,
+    STARTUP_STATE_COMPLETE
+} startup_state_t;
+
+typedef struct {
+    const char* text;
+    uint8_t priority;
+    bool enabled;
+} startup_message_t;
+
+static startup_message_t startup_messages[MAX_STARTUP_MESSAGES] = {
+    {"WIFI CONNECTED", 1, false},
+    {"USB CONNECTED", 2, false},
+    {"BT PAIRED", 3, false},
+    {"BOOT COMPLETE", 0, false},
+    {"", 255, false},
+    {"", 255, false},
+    {"", 255, false},
+    {"", 255, false},
+    {"", 255, false},
+    {"", 255, false}
+};
+
+static startup_state_t startup_state = STARTUP_STATE_IDLE;
+static uint8_t current_startup_message_idx = 0;
+static int64_t message_start_time = 0;
+static lv_obj_t *startup_label = NULL;
+static lv_timer_t *startup_timer = NULL;
 
 static const uint8_t org_01_bitmaps[] = {
     0xFC, 0x63, 0x1F, 0x80,
@@ -321,6 +354,155 @@ static void update_key_display(void) {
     lv_obj_invalidate(key_label);
 }
 
+void add_startup_message(const char* text, uint8_t priority) {
+    for (int i = 0; i < MAX_STARTUP_MESSAGES; i++) {
+        if (startup_messages[i].text[0] == '\0' || !startup_messages[i].enabled) {
+            startup_messages[i].text = text;
+            startup_messages[i].priority = priority;
+            startup_messages[i].enabled = true;
+            
+            for (int j = 0; j < MAX_STARTUP_MESSAGES - 1; j++) {
+                for (int k = 0; k < MAX_STARTUP_MESSAGES - j - 1; k++) {
+                    if (startup_messages[k].enabled && startup_messages[k + 1].enabled &&
+                        startup_messages[k].priority > startup_messages[k + 1].priority) {
+                        startup_message_t temp = startup_messages[k];
+                        startup_messages[k] = startup_messages[k + 1];
+                        startup_messages[k + 1] = temp;
+                    }
+                }
+            }
+            return;
+        }
+    }
+}
+
+void remove_startup_message(const char* text) {
+    for (int i = 0; i < MAX_STARTUP_MESSAGES; i++) {
+        if (startup_messages[i].enabled && strcmp(startup_messages[i].text, text) == 0) {
+            startup_messages[i].enabled = false;
+            for (int j = i; j < MAX_STARTUP_MESSAGES - 1; j++) {
+                startup_messages[j] = startup_messages[j + 1];
+            }
+            startup_messages[MAX_STARTUP_MESSAGES - 1].text = "";
+            startup_messages[MAX_STARTUP_MESSAGES - 1].enabled = false;
+            return;
+        }
+    }
+}
+
+static bool has_startup_messages(void) {
+    for (int i = 0; i < MAX_STARTUP_MESSAGES; i++) {
+        if (startup_messages[i].enabled && startup_messages[i].text[0] != '\0') {
+            return true;
+        }
+    }
+    return false;
+}
+
+static const char* get_next_startup_message(void) {
+    for (int i = 0; i < MAX_STARTUP_MESSAGES; i++) {
+        if (startup_messages[i].enabled && startup_messages[i].text[0] != '\0') {
+            return startup_messages[i].text;
+        }
+    }
+    return NULL;
+}
+
+static void show_next_startup_message(void) {
+    const char* message = get_next_startup_message();
+    
+    if (message != NULL) {
+        lv_label_set_text(startup_label, message);
+        lv_obj_clear_flag(startup_label, LV_OBJ_FLAG_HIDDEN);
+        message_start_time = k_uptime_get();
+        
+        remove_startup_message(message);
+    } else {
+        lv_obj_add_flag(startup_label, LV_OBJ_FLAG_HIDDEN);
+        startup_state = STARTUP_STATE_COMPLETE;
+        
+        add_startup_message("BOOT COMPLETE", 0);
+        const char* final_msg = get_next_startup_message();
+        if (final_msg != NULL) {
+            lv_label_set_text(startup_label, final_msg);
+            lv_obj_clear_flag(startup_label, LV_OBJ_FLAG_HIDDEN);
+            message_start_time = k_uptime_get();
+            remove_startup_message(final_msg);
+        }
+    }
+}
+
+static void startup_timer_cb(lv_timer_t* timer) {
+    if (startup_state == STARTUP_STATE_SHOWING) {
+        int64_t now = k_uptime_get();
+        
+        if ((now - message_start_time) >= MESSAGE_DISPLAY_TIME_MS) {
+            show_next_startup_message();
+        }
+    } else if (startup_state == STARTUP_STATE_COMPLETE) {
+        int64_t now = k_uptime_get();
+        
+        if ((now - message_start_time) >= MESSAGE_DISPLAY_TIME_MS) {
+            lv_obj_add_flag(startup_label, LV_OBJ_FLAG_HIDDEN);
+            startup_state = STARTUP_STATE_IDLE;
+            
+            if (startup_timer != NULL) {
+                lv_timer_del(startup_timer);
+                startup_timer = NULL;
+            }
+        }
+    }
+}
+
+void system_wifi_connected(void) {
+    add_startup_message("> [ 0.0010 ]: BOOTING...", 1);
+    start_startup_sequence();
+}
+
+void system_usb_connected(void) {
+    add_startup_message("> [ 0.0089 ] ZMK LOADED", 2);
+    start_startup_sequence();
+}
+
+void system_bt_paired(void) {
+    add_startup_message("GPIO: P0.06 - P1.15 MAPPED", 3);
+    start_startup_sequence();
+}
+
+static void start_startup_sequence(void) {
+    if (startup_state == STARTUP_STATE_IDLE && has_startup_messages()) {
+        startup_state = STARTUP_STATE_SHOWING;
+        current_startup_message_idx = 0;
+        
+        if (startup_label == NULL) {
+            startup_label = lv_label_create(screen);
+            lv_obj_set_style_text_color(startup_label, lv_color_white(), LV_PART_MAIN);
+            lv_obj_set_style_text_font(startup_label, &lv_font_montserrat_16, LV_PART_MAIN);
+            lv_obj_set_style_bg_color(startup_label, lv_color_black(), LV_PART_MAIN);
+            lv_obj_set_style_bg_opa(startup_label, LV_OPA_COVER, LV_PART_MAIN);
+            lv_obj_set_style_border_width(startup_label, 1, LV_PART_MAIN);
+            lv_obj_set_style_border_color(startup_label, lv_color_white(), LV_PART_MAIN);
+            lv_obj_set_style_pad_all(startup_label, 4, LV_PART_MAIN);
+            lv_obj_set_width(startup_label, SCREEN_WIDTH - 20);
+            lv_obj_align(startup_label, LV_ALIGN_CENTER, 0, 0);
+            lv_obj_move_foreground(startup_label);
+        }
+        
+        show_next_startup_message();
+    }
+}
+
+static void animation_timer_cb(lv_timer_t* timer) {
+    if (startup_state == STARTUP_STATE_IDLE) {
+        update_key_display();
+        update_time_display();
+    }
+    
+    if (startup_state != STARTUP_STATE_IDLE) {
+        startup_timer_cb(timer);
+    }
+}
+
 static void create_ui(void) {
     if (screen == NULL) return;
     
@@ -330,6 +512,20 @@ static void create_ui(void) {
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     
     create_custom_background();
+    
+    startup_label = lv_label_create(screen);
+    lv_label_set_text(startup_label, "");
+    lv_obj_set_style_text_color(startup_label, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_text_font(startup_label, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(startup_label, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(startup_label, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_border_width(startup_label, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(startup_label, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_pad_all(startup_label, 4, LV_PART_MAIN);
+    lv_obj_set_width(startup_label, SCREEN_WIDTH - 20);
+    lv_obj_align(startup_label, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_add_flag(startup_label, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_move_foreground(startup_label);
     
     static lv_color_t time_buf[30 * 5];
     static lv_img_dsc_t time_img_dsc = {
@@ -376,14 +572,15 @@ static void create_ui(void) {
     cached_layer = 255;
     memset(cached_time_str, 0, sizeof(cached_time_str));
     
+    for (int i = 0; i < MAX_STARTUP_MESSAGES; i++) {
+        startup_messages[i].enabled = false;
+    }
+    
+    add_startup_message("BOOT COMPLETE", 0);
+    
     update_time_display();
     update_layer_display();
     update_key_display();
-}
-
-static void animation_timer_cb(lv_timer_t* timer) {
-    update_key_display();
-    update_time_display();
 }
 
 static int layer_state_changed_cb(const zmk_event_t *eh) {
@@ -402,7 +599,7 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
         force_layer_update = true;
         update_layer_display();
         
-        strcpy(last_key_text, "-");
+        strcpy(last_key_text, " ");
         update_key_display();
     }
     
@@ -449,6 +646,8 @@ lv_obj_t *zmk_display_status_screen(void) {
         
         force_layer_update = true;
         update_layer_display();
+        
+        start_startup_sequence();
     }
     
     return screen;
