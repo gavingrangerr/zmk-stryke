@@ -17,7 +17,50 @@ extern "C" {
 #define MAX_LAYERS 5
 #define MAX_POSITIONS 12
 
+#define BOOT_SCREEN_DURATION_MS 3000
+#define LINE_SPACING 8
+#define BOOT_TEXT_COLOR LV_COLOR_WHITE
+#define BOOT_TEXT_FONT &lv_font_montserrat_8
+
+static const char* boot_screen_lines[] = {
+    "> [ 0.0001 ] MPU: ARM® CM4F @ 64MHZ [ nRF52840 ]",
+    "> [ 0.0009 ] MEM: FLSH 1MB | SRAM 256KB | STK_PTR: 0x20004000",
+    "> [ 0.0025 ] INIT: ZMK-CORE v3.5.0 [ BLD: 2026.02.04 ]",
+    ">",
+    "--- [ HW_LAYER: NICE!NANO V2 ] ---",
+    "GPIO: CFG [ P0.06 - P1.15 ] | PULL_UP | DBNCE: 5ms",
+    "I2C: BUS [ TWIM1 ] @ 400KHZ | ADDR: 0x3C",
+    "OLED: SSD1306 [ 128x64 ] DRV_ATTACHED | BUF: OK",
+    "MATX: 3x4 GRID | SCAN: 1000HZ | KSCAN: ACTIVE",
+    ">",
+    "--- [ PWR & TELEMETRY ] ---",
+    "V_BUS: 5.01V | STAT: BUS_PWR | LIM: 500mA",
+    "V_BAT: 4.12V (92%) | CHRG_STAT: LIPO_CC",
+    "TEMP: SYS_CORE 31.4°C | REG: DCDC_EN",
+    ">",
+    "--- [ COMM & SEC ] ---",
+    "BLE: S140 STK | PHY: 2M | ADDR: [EB:04:12:F3:A1]",
+    "BLE: PROF: \"NEXUSPRO\" | BOND: 1/8 | LAT: 7.5ms",
+    "USB: HID_ENUM [ MACROPAD ] | CDC_ACM: OK",
+    ">",
+    "--- [ SYS_READY ] ---",
+    "KERNEL: ALL THRDS SPAWNED | STAT: NOMINAL",
+    "WELCOME TO NEXUS_OS"
+};
+
+#define BOOT_LINES_COUNT (sizeof(boot_screen_lines) / sizeof(boot_screen_lines[0]))
+
+typedef enum {
+    DISPLAY_STATE_BOOT_SCREEN,
+    DISPLAY_STATE_MAIN_UI
+} display_state_t;
+
+static display_state_t current_display_state = DISPLAY_STATE_BOOT_SCREEN;
+static int64_t boot_screen_start_time = 0;
+
 static lv_obj_t *screen = NULL;
+static lv_obj_t *boot_container = NULL;
+static lv_obj_t *main_container = NULL;
 static lv_obj_t *key_label = NULL;
 static lv_obj_t *time_img = NULL;
 static lv_obj_t *layer_img = NULL;
@@ -229,12 +272,68 @@ static const lv_font_t* get_font_for_size(int size) {
     }
 }
 
+static void create_boot_screen(void) {
+    if (boot_container != NULL) {
+        lv_obj_del(boot_container);
+    }
+    
+    boot_container = lv_obj_create(screen);
+    lv_obj_set_size(boot_container, SCREEN_WIDTH, SCREEN_HEIGHT);
+    lv_obj_set_style_bg_color(boot_container, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(boot_container, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(boot_container, 0, 0);
+    lv_obj_set_style_pad_all(boot_container, 2, 0);
+    lv_obj_clear_flag(boot_container, LV_OBJ_FLAG_SCROLLABLE);
+    
+    int total_height = BOOT_LINES_COUNT * LINE_SPACING;
+    
+    lv_obj_t *scroll_container = lv_obj_create(boot_container);
+    lv_obj_set_size(scroll_container, SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4);
+    lv_obj_set_style_bg_opa(scroll_container, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(scroll_container, 0, 0);
+    
+    for (int i = 0; i < BOOT_LINES_COUNT; i++) {
+        lv_obj_t *line_label = lv_label_create(scroll_container);
+        lv_label_set_text(line_label, boot_screen_lines[i]);
+        lv_obj_set_style_text_font(line_label, BOOT_TEXT_FONT, 0);
+        lv_obj_set_style_text_color(line_label, BOOT_TEXT_COLOR, 0);
+        lv_obj_set_pos(line_label, 0, i * LINE_SPACING);
+    }
+    
+    if (total_height > SCREEN_HEIGHT - 8) {
+        lv_obj_scroll_to_y(scroll_container, total_height - (SCREEN_HEIGHT - 8), LV_ANIM_OFF);
+    }
+    
+    boot_screen_start_time = k_uptime_get();
+}
+
+static void update_boot_screen(void) {
+    if (boot_container == NULL) return;
+    
+    int64_t elapsed = k_uptime_get() - boot_screen_start_time;
+    
+    if (elapsed < BOOT_SCREEN_DURATION_MS) {
+        int scroll_pos = (elapsed * 100) / BOOT_SCREEN_DURATION_MS;
+        lv_obj_t *scroll_container = lv_obj_get_child(boot_container, 0);
+        if (scroll_container) {
+            int total_height = BOOT_LINES_COUNT * LINE_SPACING;
+            int max_scroll = total_height > (SCREEN_HEIGHT - 8) ? total_height - (SCREEN_HEIGHT - 8) : 0;
+            int target_scroll = (max_scroll * (100 - scroll_pos)) / 100;
+            lv_obj_scroll_to_y(scroll_container, target_scroll, LV_ANIM_OFF);
+        }
+    } else {
+        current_display_state = DISPLAY_STATE_MAIN_UI;
+        lv_obj_add_flag(boot_container, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(main_container, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 static void create_custom_background(void) {
     if (bg_canvas != NULL) {
         lv_obj_del(bg_canvas);
     }
 
-    bg_canvas = lv_canvas_create(screen);
+    bg_canvas = lv_canvas_create(main_container);
     lv_obj_set_size(bg_canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_obj_move_to_index(bg_canvas, 0);
     
@@ -321,13 +420,19 @@ static void update_key_display(void) {
     lv_obj_invalidate(key_label);
 }
 
-static void create_ui(void) {
-    if (screen == NULL) return;
+static void create_main_ui(void) {
+    if (main_container == NULL) {
+        main_container = lv_obj_create(screen);
+        lv_obj_set_size(main_container, SCREEN_WIDTH, SCREEN_HEIGHT);
+        lv_obj_set_style_bg_opa(main_container, LV_OPA_TRANSP, 0);
+        lv_obj_set_style_border_width(main_container, 0, 0);
+        lv_obj_add_flag(main_container, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_clean(main_container);
+    }
     
-    lv_obj_clean(screen);
-    
-    lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(main_container, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(main_container, LV_OPA_COVER, LV_PART_MAIN);
     
     create_custom_background();
     
@@ -343,7 +448,7 @@ static void create_ui(void) {
     };
     memset(time_buf, 0, sizeof(time_buf));
     
-    time_img = lv_img_create(screen);
+    time_img = lv_img_create(main_container);
     lv_img_set_src(time_img, &time_img_dsc);
     lv_obj_set_pos(time_img, 51, 54);
     lv_obj_set_user_data(time_img, &time_img_dsc);
@@ -360,12 +465,12 @@ static void create_ui(void) {
     };
     memset(layer_buf, 0, sizeof(layer_buf));
     
-    layer_img = lv_img_create(screen);
+    layer_img = lv_img_create(main_container);
     lv_img_set_src(layer_img, &layer_img_dsc);
     lv_obj_set_pos(layer_img, 76, 2);
     lv_obj_set_user_data(layer_img, &layer_img_dsc);
     
-    key_label = lv_label_create(screen);
+    key_label = lv_label_create(main_container);
     lv_label_set_text(key_label, last_key_text);
     lv_obj_set_style_text_color(key_label, lv_color_make(100, 100, 100), LV_PART_MAIN);
     lv_obj_set_style_text_font(key_label, &lv_font_montserrat_16, LV_PART_MAIN);
@@ -382,8 +487,12 @@ static void create_ui(void) {
 }
 
 static void animation_timer_cb(lv_timer_t* timer) {
-    update_key_display();
-    update_time_display();
+    if (current_display_state == DISPLAY_STATE_BOOT_SCREEN) {
+        update_boot_screen();
+    } else {
+        update_key_display();
+        update_time_display();
+    }
 }
 
 static int layer_state_changed_cb(const zmk_event_t *eh) {
@@ -400,10 +509,14 @@ static int layer_state_changed_cb(const zmk_event_t *eh) {
         }
         
         force_layer_update = true;
-        update_layer_display();
+        if (current_display_state == DISPLAY_STATE_MAIN_UI) {
+            update_layer_display();
+        }
         
         strcpy(last_key_text, " ");
-        update_key_display();
+        if (current_display_state == DISPLAY_STATE_MAIN_UI) {
+            update_key_display();
+        }
     }
     
     return 0;
@@ -416,7 +529,7 @@ static int position_state_changed_cb(const zmk_event_t *eh) {
     uint8_t position = ev->position;
     bool pressed = ev->state;
     
-    if (pressed) {
+    if (pressed && current_display_state == DISPLAY_STATE_MAIN_UI) {
         const char* key_name = get_key_name_by_position(current_layer, position);
         
         if (key_name != NULL) {
@@ -441,14 +554,16 @@ lv_obj_t *zmk_display_status_screen(void) {
         screen = lv_obj_create(NULL);
         lv_obj_set_size(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
         
-        create_ui();
-        lv_timer_create(animation_timer_cb, 100, NULL);
+        current_display_state = DISPLAY_STATE_BOOT_SCREEN;
+        create_boot_screen();
+        create_main_ui();
+        
+        lv_timer_create(animation_timer_cb, 50, NULL);
         
         current_layer = zmk_keymap_highest_layer_active();
         if (current_layer >= MAX_LAYERS) current_layer = 0;
         
         force_layer_update = true;
-        update_layer_display();
     }
     
     return screen;
