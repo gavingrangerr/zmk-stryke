@@ -18,6 +18,7 @@ extern "C" {
 #define MAX_POSITIONS 12
 
 #define BOOT_SCREEN_DURATION_MS 10000
+#define BOOT_MESSAGE_CYCLE_MS 500
 
 typedef enum {
     DISPLAY_STATE_BOOT_SCREEN,
@@ -26,6 +27,18 @@ typedef enum {
 
 static display_state_t current_display_state = DISPLAY_STATE_BOOT_SCREEN;
 static int64_t boot_screen_start_time = 0;
+static int64_t last_boot_msg_update = 0;
+static uint8_t current_boot_msg_index = 0;
+
+static const char* boot_messages[] = {
+    "BOOTING...",
+    "T_TX_PWR+",
+    "ZMK_LDR_OK",
+    "VBUS_5V_IN",
+    "READY!"
+};
+
+static const uint8_t boot_msg_count = sizeof(boot_messages) / sizeof(boot_messages[0]);
 
 static lv_obj_t *screen = NULL;
 static lv_obj_t *boot_container = NULL;
@@ -34,6 +47,7 @@ static lv_obj_t *key_label = NULL;
 static lv_obj_t *time_img = NULL;
 static lv_obj_t *layer_img = NULL;
 static lv_obj_t *bg_canvas = NULL;
+static lv_obj_t *booting_label = NULL;
 
 static uint8_t current_layer = 0;
 static char last_key_text[32] = " ";
@@ -241,6 +255,18 @@ static const lv_font_t* get_font_for_size(int size) {
     }
 }
 
+static void update_boot_message(void) {
+    if (booting_label == NULL) return;
+    
+    int64_t now = k_uptime_get();
+    
+    if (now - last_boot_msg_update >= BOOT_MESSAGE_CYCLE_MS) {
+        current_boot_msg_index = (current_boot_msg_index + 1) % boot_msg_count;
+        lv_label_set_text(booting_label, boot_messages[current_boot_msg_index]);
+        last_boot_msg_update = now;
+    }
+}
+
 static void create_boot_screen(void) {
     if (boot_container != NULL) {
         lv_obj_del(boot_container);
@@ -254,7 +280,6 @@ static void create_boot_screen(void) {
     lv_obj_set_style_pad_all(boot_container, 0, 0);
     lv_obj_clear_flag(boot_container, LV_OBJ_FLAG_SCROLLABLE);
     
-    // Create canvas for boot bitmap
     lv_obj_t *boot_canvas = lv_canvas_create(boot_container);
     lv_obj_set_size(boot_canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_obj_set_pos(boot_canvas, 0, 0);
@@ -278,19 +303,23 @@ static void create_boot_screen(void) {
         }
     }
 
-    lv_obj_t *booting_label = lv_label_create(boot_container);
-    lv_label_set_text(booting_label, "BOOTING...");
+    booting_label = lv_label_create(boot_container);
+    lv_label_set_text(booting_label, boot_messages[0]);
     lv_obj_set_style_text_font(booting_label, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(booting_label, lv_color_white(), 0);
     lv_obj_set_pos(booting_label, 65, 51);
     
     boot_screen_start_time = k_uptime_get();
+    last_boot_msg_update = boot_screen_start_time;
+    current_boot_msg_index = 0;
 }
 
 static void update_boot_screen(void) {
     if (boot_container == NULL) return;
     
     int64_t elapsed = k_uptime_get() - boot_screen_start_time;
+    
+    update_boot_message();
     
     if (elapsed >= BOOT_SCREEN_DURATION_MS) {
         current_display_state = DISPLAY_STATE_MAIN_UI;
