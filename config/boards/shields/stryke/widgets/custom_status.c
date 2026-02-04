@@ -17,7 +17,7 @@ extern "C" {
 #define MAX_LAYERS 5
 #define MAX_POSITIONS 12
 
-#define BOOT_SCREEN_DURATION_MS 3000
+#define BOOT_SCREEN_DURATION_MS 10000
 #define LINE_SPACING 8
 #define BOOT_TEXT_FONT &lv_font_montserrat_8
 
@@ -299,9 +299,8 @@ static void create_boot_screen(void) {
         lv_obj_set_pos(line_label, 0, i * LINE_SPACING);
     }
     
-    if (total_height > SCREEN_HEIGHT - 8) {
-        lv_obj_scroll_to_y(scroll_container, total_height - (SCREEN_HEIGHT - 8), LV_ANIM_OFF);
-    }
+    // Start at the top (first line)
+    lv_obj_scroll_to_y(scroll_container, 0, LV_ANIM_OFF);
     
     boot_screen_start_time = k_uptime_get();
 }
@@ -317,7 +316,7 @@ static void update_boot_screen(void) {
         if (scroll_container) {
             int total_height = BOOT_LINES_COUNT * LINE_SPACING;
             int max_scroll = total_height > (SCREEN_HEIGHT - 8) ? total_height - (SCREEN_HEIGHT - 8) : 0;
-            int target_scroll = (max_scroll * (100 - scroll_pos)) / 100;
+            int target_scroll = (max_scroll * scroll_pos) / 100;
             lv_obj_scroll_to_y(scroll_container, target_scroll, LV_ANIM_OFF);
         }
     } else {
